@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard - PayView Marketplace</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>PayView<span class="neon">Marketplace</span></h1>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="listings.html">Listings</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="dashboard.html" class="btn-login active">Dashboard</a></li>
+                <li><a href="#" id="logoutBtn" class="btn-logout">Logout</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Header -->
+    <section class="dashboard-header">
+        <div class="container">
+            <h1>Owner Dashboard</h1>
+            <p>Manage your listings and connect with buyers</p>
+        </div>
+    </section>
+
+    <!-- Dashboard Stats -->
+    <section class="dashboard-stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-info">
+                        <h3 id="totalListings">0</h3>
+                        <p>Total Listings</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👁️</div>
+                    <div class="stat-info">
+                        <h3 id="totalViews">0</h3>
+                        <p>Total Views</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💬</div>
+                    <div class="stat-info">
+                        <h3 id="totalMessages">0</h3>
+                        <p>Messages</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <h3 id="verifiedListings">0</h3>
+                        <p>Verified Listings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Content -->
+    <section class="dashboard-content">
+        <div class="container">
+            <div class="dashboard-actions">
+                <button class="btn btn-primary" id="createListingBtn">+ Create New Listing</button>
+            </div>
+
+            <!-- My Listings -->
+            <div class="dashboard-section">
+                <h2>My Listings</h2>
+                <div class="listings-grid" id="myListingsGrid">
+                    <!-- Owner's listings will be loaded here -->
+                </div>
+                <div class="no-listings" id="noMyListings" style="display: none;">
+                    <p>You haven't created any listings yet. <button class="btn-link" id="createFirstListing">Create your first listing</button></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Create/Edit Listing Modal -->
+    <div class="modal" id="listingFormModal">
+        <div class="modal-content modal-large">
+            <span class="modal-close" id="closeListingForm">&times;</span>
+            <h2 id="listingFormTitle">Create New Listing</h2>
+            <form id="listingForm" class="listing-form">
+                <div class="form-group">
+                    <label for="listingTitle">Title *</label>
+                    <input type="text" id="listingTitle" name="title" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="listingCategory">Category *</label>
+                        <select id="listingCategory" name="category" required>
+                            <option value="">Select Category</option>
+                            <option value="house">House</option>
+                            <option value="car">Car</option>
+                            <option value="land">Land</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="services">Services</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="listingPrice">Price (RWF) *</label>
+                        <input type="number" id="listingPrice" name="price" required min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="listingLocation">Location *</label>
+                    <input type="text" id="listingLocation" name="location" required>
+                </div>
+                <div class="form-group">
+                    <label for="listingPhone">Phone Number *</label>
+                    <input type="tel" id="listingPhone" name="phone" placeholder="+250 7XX XXX XXX" required>
+                </div>
+                <div class="form-group">
+                    <label for="listingDescription">Description *</label>
+                    <textarea id="listingDescription" name="description" rows="5" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="listingAvailability">Availability *</label>
+                    <select id="listingAvailability" name="availability" required>
+                        <option value="available">Available</option>
+                        <option value="pending">Pending</option>
+                        <option value="sold">Sold</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Images *</label>
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <input type="file" id="listingImages" name="images" multiple accept="image/*" style="display: none;">
+                        <div class="upload-placeholder" id="uploadPlaceholder">
+                            <span>📷</span>
+                            <p>Click to upload images or drag and drop</p>
+                            <p class="upload-hint">You can upload multiple images</p>
+                        </div>
+                        <div class="image-preview-grid" id="imagePreviewGrid"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Videos (Optional)</label>
+                    <div class="image-upload-area" id="videoUploadArea">
+                        <input type="file" id="listingVideos" name="videos" multiple accept="video/*" style="display: none;">
+                        <div class="upload-placeholder" id="videoUploadPlaceholder">
+                            <span>🎥</span>
+                            <p>Click to upload videos or drag and drop</p>
+                            <p class="upload-hint">You can upload multiple videos</p>
+                        </div>
+                        <div class="video-preview-grid" id="videoPreviewGrid"></div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelListingForm">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Listing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Listing Detail Modal -->
+    <div class="modal" id="listingModal">
+        <div class="modal-content modal-large">
+            <span class="modal-close" id="closeListingModal">&times;</span>
+            <div id="listingModalContent">
+                <!-- Listing details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div class="modal" id="chatModal">
+        <div class="modal-content modal-large">
+            <span class="modal-close" id="closeChatModal">&times;</span>
+            <h2>Messages</h2>
+            <div class="chat-container">
+                <div class="chat-list" id="chatList">
+                    <!-- Chat conversations will be loaded here -->
+                </div>
+                <div class="chat-window" id="chatWindow">
+                    <div class="chat-placeholder">
+                        <p>Select a conversation to start chatting</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>PayView Marketplace</h3>
+                    <p>Connecting buyers and sellers across Rwanda and beyond.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="listings.html">Listings</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PayView Marketplace. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

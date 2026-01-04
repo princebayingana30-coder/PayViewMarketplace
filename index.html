@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PayView Marketplace - Connect Buyers & Sellers</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>PayView<span class="neon">Marketplace</span></h1>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="listings.html">Listings</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="login.html" class="btn-login">Owner Login</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Role Selection -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to PayView Marketplace</h1>
+            <p class="hero-subtitle">Connect product owners with clients in a simple and transparent way</p>
+            <div class="role-selection">
+                <div class="role-card" onclick="window.location.href='login.html'">
+                    <div class="role-icon">👤</div>
+                    <h2>I am an Owner / Seller</h2>
+                    <p>Register to list your products and reach potential buyers</p>
+                    <div class="role-features">
+                        <span>✓ Upload products</span>
+                        <span>✓ Manage listings</span>
+                        <span>✓ Connect with buyers</span>
+                    </div>
+                </div>
+                <div class="role-card" onclick="window.location.href='listings.html'">
+                    <div class="role-icon">🛒</div>
+                    <h2>I am a Client / Buyer</h2>
+                    <p>Browse all products and contact owners directly</p>
+                    <div class="role-features">
+                        <span>✓ No registration needed</span>
+                        <span>✓ View all details</span>
+                        <span>✓ Direct contact</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose PayView?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🛍️</div>
+                    <h3>Diverse Products</h3>
+                    <p>Houses, cars, land, electronics, services, and more in one place.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📞</div>
+                    <h3>Direct Contact</h3>
+                    <p>Contact product owners directly via phone or WhatsApp.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📸</div>
+                    <h3>Rich Media</h3>
+                    <p>View multiple images and videos for each product.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Easy Search</h3>
+                    <p>Find exactly what you're looking for with our search and filters.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sample Listings Section -->
+    <section class="sample-listings">
+        <div class="container">
+            <h2 class="section-title">Featured Listings</h2>
+            <div class="listings-grid" id="featuredListings">
+                <!-- Sample listings will be loaded here -->
+            </div>
+            <div class="text-center">
+                <a href="listings.html" class="btn btn-primary">View All Listings</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>PayView Marketplace</h3>
+                    <p>Connecting buyers and sellers across Rwanda and beyond.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="listings.html">Listings</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>For Owners</h4>
+                    <ul>
+                        <li><a href="login.html">Login</a></li>
+                        <li><a href="register.html">Register</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 PayView Marketplace. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
