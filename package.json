@@ -1,15 +1,15 @@
 {
-  "name": "payview-marketplace",
+  "name": "your-app-name",
   "version": "1.0.0",
-  "private": true,
   "main": "index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node index.js"
   },
   "engines": {
     "node": ">=18"
-  },
-  "dependencies": {
-    "cors": "^2.8.5"
   }
 }
