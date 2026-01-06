@@ -1,12 +1,19 @@
 const express = require("express");
-const path = require("path");
+const cors = require("cors");
 
 const app = express();
 
-// Serve static files if needed
-app.use(express.static(path.join(__dirname, "public")));
+// Allow frontend to access backend
+app.use(cors({
+  origin: [
+    "http://payviewmarketplace.netlify.app",
+    "http://localhost:3000"
+  ],
+  credentials: true
+}));
 
-// Test route (VERY IMPORTANT)
+app.use(express.json());
+
 app.get("/", (req, res) => {
   res.send("PayView Marketplace backend is running 🚀");
 });

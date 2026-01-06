@@ -117,6 +117,17 @@ const sampleListings = [
 ];
 
 // Initialize localStorage data
+   function connect() {
+      fetch("https://payview-marketplace-3.onrender.com/api/v1/connect")
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById("result").innerText = data.message;
+        })
+        .catch(error => {
+          document.getElementById("result").innerText = "Connection failed ❌";
+          console.error(error);
+        });
+    }
 function initializeStorage() {
     if (!localStorage.getItem('listings')) {
         localStorage.setItem('listings', JSON.stringify(sampleListings));
