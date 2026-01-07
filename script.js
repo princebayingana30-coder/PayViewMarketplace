@@ -1,120 +1,14 @@
 // Sample listings data with royalty-free image URLs
-const sampleListings = [
-    {
-        id: 1,
-        title: "Modern 3-Bedroom House in Kigali",
-        category: "house",
-        price: 25000000,
-        location: "Kigali, Nyarugenge",
-        phone: "+250 793 257 781",
-        description: "Beautiful modern house with 3 bedrooms, 2 bathrooms, fully furnished. Located in a secure neighborhood with easy access to amenities.",
-        availability: "available",
-        images: [
-            "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800",
-            "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800",
-            "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800"
-        ],
-        videos: [],
-        verified: true,
-        ownerId: 1,
-        views: 245,
-        createdAt: "2024-01-15"
-    },
-    {
-        id: 2,
-        title: "Toyota RAV4 2020 - Excellent Condition",
-        category: "car",
-        price: 18000000,
-        location: "Kigali, Gasabo",
-        phone: "+250 796 102 065",
-        description: "Well-maintained Toyota RAV4 with low mileage. Full service history available. Perfect for family use.",
-        availability: "available",
-        images: [
-            "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800",
-            "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=800"
-        ],
-        videos: [],
-        verified: true,
-        ownerId: 2,
-        views: 189,
-        createdAt: "2024-01-20"
-    },
-    {
-        id: 3,
-        title: "Prime Land for Sale - 5000 sqm",
-        category: "land",
-        price: 35000000,
-        location: "Kigali, Kicukiro",
-        phone: "+250 793 257 781",
-        description: "Prime location land suitable for residential or commercial development. Clear title, ready for construction.",
-        availability: "available",
-        images: [
-            "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800",
-            "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=800"
-        ],
-        videos: [],
-        verified: true,
-        ownerId: 1,
-        views: 312,
-        createdAt: "2024-01-18"
-    },
-    {
-        id: 4,
-        title: "Luxury Apartment - 2 Bedrooms",
-        category: "house",
-        price: 12000000,
-        location: "Kigali, Nyarugenge",
-        phone: "+250 796 102 065",
-        description: "Spacious 2-bedroom apartment with modern amenities, balcony, and parking space. Perfect for young professionals.",
-        availability: "available",
-        images: [
-            "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800",
-            "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800"
-        ],
-        videos: [],
-        verified: false,
-        ownerId: 3,
-        views: 156,
-        createdAt: "2024-01-22"
-    },
-    {
-        id: 5,
-        title: "Honda CR-V 2019 - One Owner",
-        category: "car",
-        price: 15000000,
-        location: "Kigali, Gasabo",
-        phone: "+250 793 257 781",
-        description: "Single owner Honda CR-V in excellent condition. All original parts, regularly serviced.",
-        availability: "available",
-        images: [
-            "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800"
-        ],
-        videos: [],
-        verified: true,
-        ownerId: 2,
-        views: 201,
-        createdAt: "2024-01-19"
-    },
-    {
-        id: 6,
-        title: "Commercial Space for Rent",
-        category: "other",
-        price: 800000,
-        location: "Kigali, Kicukiro",
-        phone: "+250 796 102 065",
-        description: "Prime commercial space in busy area. Perfect for retail, office, or restaurant. High foot traffic.",
-        availability: "available",
-        images: [
-            "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800",
-            "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800"
-        ],
-        videos: [],
-        verified: true,
-        ownerId: 3,
-        views: 278,
-        createdAt: "2024-01-21"
-    }
-];
+const API_BASE_URL = "https://payview-marketplace-3.onrender.com/api/v1";
+async function apiRequest(endpoint, options = {}) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        ...options
+    });
+    return response.json();
+}
+
 
 // Initialize localStorage data
    function connect() {
@@ -128,20 +22,6 @@ const sampleListings = [
           console.error(error);
         });
     }
-function initializeStorage() {
-    if (!localStorage.getItem('listings')) {
-        localStorage.setItem('listings', JSON.stringify(sampleListings));
-    }
-    if (!localStorage.getItem('users')) {
-        localStorage.setItem('users', JSON.stringify([]));
-    }
-    if (!localStorage.getItem('currentUser')) {
-        localStorage.setItem('currentUser', JSON.stringify(null));
-    }
-    if (!localStorage.getItem('messages')) {
-        localStorage.setItem('messages', JSON.stringify([]));
-    }
-}
 
 // Navigation
 function initNavigation() {
@@ -174,27 +54,19 @@ function checkAuth() {
     return !!currentUser;
 }
 
-function login(email, password) {
-    const users = JSON.parse(localStorage.getItem('users'));
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-        localStorage.setItem('currentUser', JSON.stringify(user));
-        return { success: true, user };
-    }
-    return { success: false, message: 'Invalid email or password' };
+async function login(email, password) {
+    return await apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password })
+    });
+}
+async function register(userData) {
+    return await apiRequest("/auth/register", {
+        method: "POST",
+        body: JSON.stringify(userData)
+    });
 }
 
-function register(userData) {
-    const users = JSON.parse(localStorage.getItem('users'));
-    
-    if (users.find(u => u.email === userData.email)) {
-        return { success: false, message: 'Email already registered' };
-    }
-    
-    if (userData.password !== userData.confirmPassword) {
-        return { success: false, message: 'Passwords do not match' };
-    }
     
     const newUser = {
         id: Date.now(),
@@ -218,32 +90,21 @@ function logout() {
 }
 
 // Listings Management
-function getListings() {
-    return JSON.parse(localStorage.getItem('listings'));
+async function getListings() {
+    return await apiRequest("/listings");
 }
 
-function saveListing(listing) {
-    const listings = getListings();
-    if (listing.id) {
-        const index = listings.findIndex(l => l.id === listing.id);
-        if (index !== -1) {
-            listings[index] = listing;
-        }
-    } else {
-        listing.id = Date.now();
-        listing.createdAt = new Date().toISOString();
-        listing.views = 0;
-        listing.ownerId = JSON.parse(localStorage.getItem('currentUser')).id;
-        listings.push(listing);
-    }
-    localStorage.setItem('listings', JSON.stringify(listings));
-    return listing;
+async function saveListing(listing) {
+    return await apiRequest("/listings", {
+        method: listing.id ? "PUT" : "POST",
+        body: JSON.stringify(listing)
+    });
 }
 
-function deleteListing(id) {
-    const listings = getListings();
-    const filtered = listings.filter(l => l.id !== id);
-    localStorage.setItem('listings', JSON.stringify(filtered));
+async function deleteListing(id) {
+    return await apiRequest(`/listings/${id}`, {
+        method: "DELETE"
+    });
 }
 
 function getListingById(id) {
