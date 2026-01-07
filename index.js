@@ -6,7 +6,7 @@ const app = express();
 // Allow frontend to access backend
 app.use(cors({
   origin: [
-    "http://payviewmarketplace.netlify.app",
+    "https://payviewmarketplace.netlify.app",
     "http://localhost:3000"
   ],
   credentials: true
