@@ -39,12 +39,12 @@ async function login(email, password) {
     }
 }
 
-async function register(userData) {
+async function registername, email, phone, password) {
     try {
         const res = await fetch(`${API_BASE_URL}/auth/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(userData)
+            body: JSON.stringify(name, email, phone, password)
         });
         const data = await res.json();
         if (data.success) {
@@ -313,38 +313,57 @@ function initAuthForms() {
     const loginForm = document.getElementById("loginForm");
     const registerForm = document.getElementById("registerForm");
 
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
-            const result = await login(email, password);
-            if (result.success) window.location.href = "dashboard.html";
-            else showNotification(result.message || "Login failed", "error");
-        });
+loginForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  try {
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    const result = await login(email, password);
+
+    if (result.success) {
+      sessionStorage.setItem("currentUser", JSON.stringify(result.user));
+      window.location.href = "dashboard.html";
+    } else {
+      alert(result.message || "Invalid email or password");
     }
 
-    if (registerForm) {
-        registerForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            const password = document.getElementById("regPassword").value;
-            const confirmPassword = document.getElementById("regConfirmPassword").value;
-            if (password !== confirmPassword) return showNotification("Passwords do not match", "error");
+  } catch (err) {
+    console.error("Login handler error:", err);
+    alert("Something went wrong. Check console.");
+  }
+});
 
-            const userData = {
-                name: document.getElementById("regName").value,
-                email: document.getElementById("regEmail").value,
-                phone: document.getElementById("regPhone").value,
-                password,
-                confirmPassword
-            };
+registerForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-            const result = await register(userData);
-            if (result.success) window.location.href = "dashboard.html";
-            else showNotification(result.message || "Registration failed", "error");
-        });
+  try {
+    const name = document.getElementById("fullName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (password !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
     }
-}
+
+    const result = await register(name, email, phone, password);
+
+    if (result.success) {
+      sessionStorage.setItem("currentUser", JSON.stringify(result.user));
+      window.location.href = "dashboard.html";
+    } else {
+      alert(result.message || "Registration failed");
+    }
+
+  } catch (err) {
+    console.error("Register handler error:", err);
+    alert("Something went wrong. Check console.");
+  }
+});
 
 function initLogout() {
     const logoutBtn = document.getElementById("logoutBtn");
