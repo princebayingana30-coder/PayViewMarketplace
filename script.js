@@ -370,3 +370,4 @@ function initLogout() {
     if (logoutBtn) logoutBtn.addEventListener("click", e => { e.preventDefault(); logout(); });
 }
 
+}
