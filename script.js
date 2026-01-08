@@ -39,7 +39,7 @@ async function login(email, password) {
     }
 }
 
-async function registername, email, phone, password) {
+async function register(name, email, phone, password) {
     try {
         const res = await fetch(`${API_BASE_URL}/auth/register`, {
             method: "POST",
