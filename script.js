@@ -6,7 +6,6 @@ const API_BASE_URL = "https://payview-marketplace-3.onrender.com/api/v1";
 async function apiRequest(endpoint, options = {}) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         ...options
     });
     return response.json();
@@ -26,13 +25,16 @@ async function login(email, password) {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
         });
+
         const data = await res.json();
+
         if (data.success) {
             sessionStorage.setItem("currentUser", JSON.stringify(data.user));
             return { success: true, user: data.user };
         } else {
             return { success: false, message: data.message };
         }
+
     } catch (err) {
         console.error(err);
         return { success: false, message: "Login failed" };
@@ -44,15 +46,23 @@ async function register(name, email, phone, password) {
         const res = await fetch(`${API_BASE_URL}/auth/register`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(name, email, phone, password)
+            body: JSON.stringify({
+                name,
+                email,
+                phone,
+                password
+            })
         });
+
         const data = await res.json();
+
         if (data.success) {
             sessionStorage.setItem("currentUser", JSON.stringify(data.user));
             return { success: true, user: data.user };
         } else {
             return { success: false, message: data.message };
         }
+
     } catch (err) {
         console.error(err);
         return { success: false, message: "Registration failed" };
@@ -92,7 +102,10 @@ async function saveListing(listing) {
 
     listing.ownerId = listing.ownerId || user.id;
 
-    const url = listing.id ? `${API_BASE_URL}/listings/${listing.id}` : `${API_BASE_URL}/listings`;
+    const url = listing.id
+        ? `/listings/${listing.id}`
+        : `/listings`;
+
     const method = listing.id ? "PUT" : "POST";
 
     const data = await apiRequest(url, {
@@ -104,7 +117,7 @@ async function saveListing(listing) {
 }
 
 async function deleteListing(id) {
-    const data = await apiRequest(`${API_BASE_URL}/listings/${id}`, { method: "DELETE" });
+    const data = await apiRequest(`/listings/${id}`, { method: "DELETE" });
     return data.success;
 }
 
@@ -133,42 +146,12 @@ async function loadListingsPage() {
             case "price-high":
                 listings.sort((a, b) => b.price - a.price);
                 break;
-            case "newest":
             default:
                 listings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         }
     }
 
     displayListings(listings, "listingsGrid");
-
-    const noListings = document.getElementById("noListings");
-    if (noListings) {
-        noListings.style.display = listings.length === 0 ? "block" : "none";
-    }
-}
-
-async function loadFeaturedListings() {
-    let listings = await getListings();
-    listings = listings.slice(0, 3); // Show top 3
-    displayListings(listings, "featuredListings");
-}
-
-async function loadDashboardListings() {
-    const user = getCurrentUser();
-    if (!user) return;
-
-    const listings = await getListings();
-    const myListings = listings.filter(l => l.ownerId === user.id);
-
-    displayListings(myListings, "myListingsGrid", true);
-
-    const totalViewsEl = document.getElementById("totalViews");
-    const verifiedListingsEl = document.getElementById("verifiedListings");
-    const totalListingsEl = document.getElementById("totalListings");
-
-    if (totalViewsEl) totalViewsEl.textContent = myListings.reduce((sum, l) => sum + (l.views || 0), 0);
-    if (verifiedListingsEl) verifiedListingsEl.textContent = myListings.filter(l => l.verified).length;
-    if (totalListingsEl) totalListingsEl.textContent = myListings.length;
 }
 
 // ================================
@@ -176,15 +159,9 @@ async function loadDashboardListings() {
 // ================================
 async function loadProductDetails(id) {
     const listing = await getListingById(id);
-    if (!listing) {
-        document.getElementById("productDetailsContent").innerHTML = `
-            <div class="no-listings">
-                <p>Product not found. <a href="listings.html">Browse all listings</a></p>
-            </div>`;
-        return;
-    }
 
-    // Optionally increment views via backend API
+    if (!listing) return;
+
     listing.views = (listing.views || 0) + 1;
     await saveListing(listing);
 
@@ -192,182 +169,84 @@ async function loadProductDetails(id) {
 }
 
 // ================================
-// Listing Form Handlers
-// ================================
-async function openListingForm(listingId = null) {
-    const modal = document.getElementById("listingFormModal");
-    const form = document.getElementById("listingForm");
-    const title = document.getElementById("listingFormTitle");
-
-    if (listingId) {
-        const listing = await getListingById(listingId);
-        if (listing) {
-            form.dataset.listingId = listingId;
-            document.getElementById("listingTitle").value = listing.title;
-            document.getElementById("listingCategory").value = listing.category;
-            document.getElementById("listingPrice").value = listing.price;
-            document.getElementById("listingLocation").value = listing.location;
-            document.getElementById("listingPhone").value = listing.phone || "";
-            document.getElementById("listingDescription").value = listing.description;
-            document.getElementById("listingAvailability").value = listing.availability;
-            if (title) title.textContent = "Edit Listing";
-        }
-    } else {
-        form.reset();
-        form.dataset.listingId = "";
-        if (title) title.textContent = "Create New Listing";
-    }
-
-    if (modal) modal.style.display = "block";
-    initImageUpload();
-    initVideoUpload();
-}
-
-async function saveListingFromForm() {
-    const form = document.getElementById("listingForm");
-    const listingId = form.dataset.listingId;
-
-    const images = window.getUploadedImages ? window.getUploadedImages() : [];
-    const videos = window.getUploadedVideos ? window.getUploadedVideos() : [];
-
-    const listing = {
-        id: listingId ? parseInt(listingId) : null,
-        title: document.getElementById("listingTitle").value,
-        category: document.getElementById("listingCategory").value,
-        price: parseInt(document.getElementById("listingPrice").value),
-        location: document.getElementById("listingLocation").value,
-        phone: document.getElementById("listingPhone").value,
-        description: document.getElementById("listingDescription").value,
-        availability: document.getElementById("listingAvailability").value,
-        images: images.length ? images : ["https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800"],
-        videos: videos,
-        verified: false
-    };
-
-    // Preserve ownerId if editing
-    if (listingId) {
-        const existing = await getListingById(parseInt(listingId));
-        if (existing) listing.ownerId = existing.ownerId;
-    }
-
-    const saved = await saveListing(listing);
-    if (saved) {
-        closeListingForm();
-        loadDashboardListings();
-        showNotification("Listing saved successfully!");
-    } else {
-        showNotification("Failed to save listing", "error");
-    }
-}
-
-function closeListingForm() {
-    const modal = document.getElementById("listingFormModal");
-    if (modal) modal.style.display = "none";
-
-    const form = document.getElementById("listingForm");
-    if (form) form.reset();
-
-    if (window.clearUploadedImages) window.clearUploadedImages();
-    if (window.clearUploadedVideos) window.clearUploadedVideos();
-}
-
-// ================================
-// Init & Event Listeners
+// Init
 // ================================
 document.addEventListener("DOMContentLoaded", async () => {
-    initNavigation();
-    initModals();
 
     if (window.location.pathname.includes("dashboard.html")) {
         if (checkAuth()) {
             await loadDashboardListings();
-            initListingForm();
             initLogout();
         }
-    } else if (window.location.pathname.includes("listings.html")) {
-        await loadListingsPage();
-        initFilters();
-    } else if (
-        window.location.pathname.includes("index.html") ||
-        window.location.pathname === "/" ||
-        window.location.pathname.endsWith("/bebe/") ||
-        window.location.pathname.endsWith("/bebe")
+    }
+
+    if (
+        window.location.pathname.includes("login.html") ||
+        window.location.pathname.includes("register.html")
     ) {
-        await loadFeaturedListings();
-    } else if (window.location.pathname.includes("contact.html")) {
-        initContactForm();
-    } else if (window.location.pathname.includes("login.html") || window.location.pathname.includes("register.html")) {
         initAuthForms();
     }
 });
 
 // ================================
-// Navigation, Modals, Notifications
+// Forms
 // ================================
-function initNavigation() { /* same as your previous code */ }
-function initModals() { /* same as your previous code */ }
-function showNotification(message, type = "success") { /* same as your previous code */ }
-function initFilters() { /* same as your previous code */ }
-function initContactForm() { /* same as your previous code */ }
 function initAuthForms() {
+
     const loginForm = document.getElementById("loginForm");
     const registerForm = document.getElementById("registerForm");
 
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+    if (loginForm) {
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-  try {
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
+            const email = document.getElementById("loginEmail").value.trim();
+            const password = document.getElementById("loginPassword").value;
 
-    const result = await login(email, password);
+            const result = await login(email, password);
 
-    if (result.success) {
-      sessionStorage.setItem("currentUser", JSON.stringify(result.user));
-      window.location.href = "dashboard.html";
-    } else {
-      alert(result.message || "Invalid email or password");
+            if (result.success) {
+                window.location.href = "dashboard.html";
+            } else {
+                alert(result.message || "Login failed");
+            }
+        });
     }
 
-  } catch (err) {
-    console.error("Login handler error:", err);
-    alert("Something went wrong. Check console.");
-  }
-});
+    if (registerForm) {
+        registerForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-registerForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+            const name = document.getElementById("fullName").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirmPassword").value;
 
-  try {
-    const name = document.getElementById("fullName").value.trim();
-    const email = document.getElementById("email").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const password = document.getElementById("password").value;
-    const confirmPassword = document.getElementById("confirmPassword").value;
+            if (password !== confirmPassword) {
+                alert("Passwords do not match");
+                return;
+            }
 
-    if (password !== confirmPassword) {
-      alert("Passwords do not match");
-      return;
+            const result = await register(name, email, phone, password);
+
+            if (result.success) {
+                window.location.href = "dashboard.html";
+            } else {
+                alert(result.message || "Registration failed");
+            }
+        });
     }
-
-    const result = await register(name, email, phone, password);
-
-    if (result.success) {
-      sessionStorage.setItem("currentUser", JSON.stringify(result.user));
-      window.location.href = "dashboard.html";
-    } else {
-      alert(result.message || "Registration failed");
-    }
-
-  } catch (err) {
-    console.error("Register handler error:", err);
-    alert("Something went wrong. Check console.");
-  }
-});
+}
 
 function initLogout() {
     const logoutBtn = document.getElementById("logoutBtn");
-    if (logoutBtn) logoutBtn.addEventListener("click", e => { e.preventDefault(); logout(); });
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", e => {
+            e.preventDefault();
+            logout();
+        });
+    }
 }
 
 }
