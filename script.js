@@ -31,9 +31,9 @@ async function login(email, password) {
         if (data.success) {
             sessionStorage.setItem("currentUser", JSON.stringify(data.user));
             return { success: true, user: data.user };
-        } else {
-            return { success: false, message: data.message };
         }
+
+        return { success: false, message: data.message };
 
     } catch (err) {
         console.error(err);
@@ -59,9 +59,9 @@ async function register(name, email, phone, password) {
         if (data.success) {
             sessionStorage.setItem("currentUser", JSON.stringify(data.user));
             return { success: true, user: data.user };
-        } else {
-            return { success: false, message: data.message };
         }
+
+        return { success: false, message: data.message };
 
     } catch (err) {
         console.error(err);
@@ -76,11 +76,13 @@ function logout() {
 
 function checkAuth() {
     const user = getCurrentUser();
+
     if (!user && window.location.pathname.includes("dashboard.html")) {
         window.location.href = "login.html";
         return false;
     }
-    return !!user;
+
+    return true;
 }
 
 // ================================
@@ -117,65 +119,20 @@ async function saveListing(listing) {
 }
 
 async function deleteListing(id) {
-    const data = await apiRequest(`/listings/${id}`, { method: "DELETE" });
+    const data = await apiRequest(`/listings/${id}`, {
+        method: "DELETE"
+    });
+
     return data.success;
 }
 
 // ================================
-// Listings Display
-// ================================
-function formatPrice(price) {
-    return new Intl.NumberFormat('en-RW').format(price);
-}
-
-async function loadListingsPage() {
-    let listings = await getListings();
-
-    const categoryFilter = document.getElementById("categoryFilter");
-    const sortFilter = document.getElementById("sortFilter");
-
-    if (categoryFilter && categoryFilter.value !== "all") {
-        listings = listings.filter(l => l.category === categoryFilter.value);
-    }
-
-    if (sortFilter) {
-        switch (sortFilter.value) {
-            case "price-low":
-                listings.sort((a, b) => a.price - b.price);
-                break;
-            case "price-high":
-                listings.sort((a, b) => b.price - a.price);
-                break;
-            default:
-                listings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        }
-    }
-
-    displayListings(listings, "listingsGrid");
-}
-
-// ================================
-// Product Details
-// ================================
-async function loadProductDetails(id) {
-    const listing = await getListingById(id);
-
-    if (!listing) return;
-
-    listing.views = (listing.views || 0) + 1;
-    await saveListing(listing);
-
-    displayProductDetails(listing);
-}
-
-// ================================
-// Init
+// Page Init
 // ================================
 document.addEventListener("DOMContentLoaded", async () => {
 
     if (window.location.pathname.includes("dashboard.html")) {
         if (checkAuth()) {
-            await loadDashboardListings();
             initLogout();
         }
     }
@@ -186,6 +143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     ) {
         initAuthForms();
     }
+
 });
 
 // ================================
@@ -239,14 +197,16 @@ function initAuthForms() {
     }
 }
 
+// ================================
+// Logout
+// ================================
 function initLogout() {
     const logoutBtn = document.getElementById("logoutBtn");
+
     if (logoutBtn) {
-        logoutBtn.addEventListener("click", e => {
+        logoutBtn.addEventListener("click", (e) => {
             e.preventDefault();
             logout();
         });
     }
-}
-
 }
