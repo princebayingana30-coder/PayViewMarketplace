@@ -1,211 +1,182 @@
-/* ===============================
+/* =================================================
    CONFIG
-================================ */
+================================================= */
 const API_URL = "https://payview-marketplace-4.onrender.com";
 
-/* ===============================
-   AUTH HELPERS
-================================ */
-function getCurrentUser() {
-    return JSON.parse(localStorage.getItem("currentUser"));
+/* =================================================
+   AUTH STATE
+================================================= */
+function isLoggedIn() {
+  return !!localStorage.getItem("currentUser");
 }
 
-function isLoggedIn() {
-    return !!localStorage.getItem("token");
+function getCurrentUser() {
+  return JSON.parse(localStorage.getItem("currentUser"));
 }
 
 function logout() {
-    localStorage.removeItem("token");
-    localStorage.removeItem("currentUser");
-    window.location.href = "login.html";
+  localStorage.removeItem("currentUser");
+  window.location.href = "login.html";
 }
 
-/* ===============================
+/* =================================================
    LOGIN
-================================ */
+================================================= */
 async function login(email, password) {
-    try {
-        const res = await fetch(`${API_URL}/api/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password })
-        });
+  const res = await fetch(`${API_URL}/api/v1/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password })
+  });
 
-        const data = await res.json();
+  const data = await res.json();
 
-        if (!res.ok) {
-            return { success: false, message: data.message || "Login failed" };
-        }
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || "Login failed");
+  }
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("currentUser", JSON.stringify(data.user));
-
-        return { success: true };
-    } catch (err) {
-        return { success: false, message: "Server error" };
-    }
+  localStorage.setItem("currentUser", JSON.stringify(data.user));
+  return data.user;
 }
 
-/* ===============================
+/* =================================================
    REGISTER
-================================ */
+================================================= */
 async function register(userData) {
-    try {
-        const res = await fetch(`${API_URL}/api/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(userData)
-        });
+  const res = await fetch(`${API_URL}/api/v1/auth/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(userData)
+  });
 
-        const data = await res.json();
+  const data = await res.json();
 
-        if (!res.ok) {
-            return { success: false, message: data.message || "Register failed" };
-        }
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || "Registration failed");
+  }
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("currentUser", JSON.stringify(data.user));
-
-        return { success: true };
-    } catch (err) {
-        return { success: false, message: "Server error" };
-    }
+  localStorage.setItem("currentUser", JSON.stringify(data.user));
+  return data.user;
 }
 
-/* ===============================
+/* =================================================
    AUTH FORMS
-================================ */
+================================================= */
 function initAuthForms() {
-    const loginForm = document.getElementById("loginForm");
-    const registerForm = document.getElementById("registerForm");
+  const loginForm = document.getElementById("loginForm");
+  const registerForm = document.getElementById("registerForm");
 
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const email = loginForm.email.value;
-            const password = loginForm.password.value;
-
-            const result = await login(email, password);
-
-            if (result.success) {
-                window.location.href = "dashboard.html";
-            } else {
-                alert(result.message);
-            }
-        });
-    }
-
-    if (registerForm) {
-        registerForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const userData = {
-                name: registerForm.name.value,
-                email: registerForm.email.value,
-                phone: registerForm.phone.value,
-                password: registerForm.password.value
-            };
-
-            const result = await register(userData);
-
-            if (result.success) {
-                window.location.href = "dashboard.html";
-            } else {
-                alert(result.message);
-            }
-        });
-    }
-}
-
-/* ===============================
-   LISTINGS FETCH
-================================ */
-async function fetchListings() {
-    try {
-        const res = await fetch(`${API_URL}/api/listings`);
-        const listings = await res.json();
-        renderListings(listings);
-    } catch {
-        console.error("Failed to fetch listings");
-    }
-}
-
-/* ===============================
-   RENDER LISTINGS
-================================ */
-function renderListings(listings) {
-    const container = document.getElementById("listingsContainer");
-    if (!container) return;
-
-    container.innerHTML = "";
-
-    listings.forEach(listing => {
-        const card = document.createElement("div");
-        card.className = "listing-card";
-
-        card.innerHTML = `
-            <img src="${listing.images?.[0] || 'https://via.placeholder.com/300'}">
-            <h3>${listing.title}</h3>
-            <p>${listing.location}</p>
-            <strong>${listing.price} RWF</strong>
-        `;
-
-        container.appendChild(card);
-    });
-}
-
-/* ===============================
-   UPLOAD LISTING
-================================ */
-async function saveListingFromForm(form, images, videos) {
-    const token = localStorage.getItem("token");
-    if (!token) {
-        alert("Please login");
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append("title", form.title.value);
-    formData.append("category", form.category.value);
-    formData.append("price", form.price.value);
-    formData.append("location", form.location.value);
-    formData.append("phone", form.phone.value);
-    formData.append("description", form.description.value);
-    formData.append("availability", form.availability.value);
-
-    images.forEach(img => formData.append("images", img));
-    videos.forEach(video => formData.append("videos", video));
-
-    const res = await fetch(`${API_URL}/api/listings`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`
-        },
-        body: formData
-    });
-
-    if (res.ok) {
-        alert("Listing uploaded!");
+  if (loginForm) {
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await login(
+          loginForm.email.value,
+          loginForm.password.value
+        );
         window.location.href = "dashboard.html";
-    } else {
-        alert("Upload failed");
-    }
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
+
+  if (registerForm) {
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      try {
+        await register({
+          name: registerForm.name.value,
+          email: registerForm.email.value,
+          phone: registerForm.phone.value,
+          password: registerForm.password.value
+        });
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+  }
 }
 
-/* ===============================
-   PAGE GUARDS
-================================ */
+/* =================================================
+   LISTINGS
+================================================= */
+async function fetchListings() {
+  const res = await fetch(`${API_URL}/api/v1/listings`);
+  const data = await res.json();
+
+  if (!data.success) return;
+  renderListings(data.listings);
+}
+
+function renderListings(listings) {
+  const container = document.getElementById("listingsContainer");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  listings.forEach(l => {
+    const div = document.createElement("div");
+    div.className = "listing-card";
+    div.innerHTML = `
+      <h3>${l.title}</h3>
+      <p>${l.location}</p>
+      <strong>${l.price} RWF</strong>
+    `;
+    container.appendChild(div);
+  });
+}
+
+/* =================================================
+   CREATE LISTING
+================================================= */
+async function saveListingFromForm(form) {
+  const user = getCurrentUser();
+  if (!user) return alert("Please login");
+
+  const data = {
+    title: form.title.value,
+    category: form.category.value,
+    price: form.price.value,
+    location: form.location.value,
+    phone: form.phone.value,
+    description: form.description.value,
+    availability: form.availability.value,
+    ownerId: user.id,
+    images: [],
+    videos: []
+  };
+
+  const res = await fetch(`${API_URL}/api/v1/listings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  const result = await res.json();
+
+  if (!result.success) {
+    alert("Upload failed");
+  } else {
+    alert("Listing uploaded");
+    window.location.href = "dashboard.html";
+  }
+}
+
+/* =================================================
+   PAGE GUARD
+================================================= */
 function protectPage() {
-    if (!isLoggedIn()) {
-        window.location.href = "login.html";
-    }
+  if (!isLoggedIn()) {
+    window.location.href = "login.html";
+  }
 }
 
-/* ===============================
+/* =================================================
    INIT
-================================ */
+================================================= */
 document.addEventListener("DOMContentLoaded", () => {
-    initAuthForms();
-    fetchListings();
+  initAuthForms();
+  fetchListings();
 });
