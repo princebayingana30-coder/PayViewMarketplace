@@ -6,7 +6,7 @@ const app = express();
 app.use(cors({
   origin: [
     "https://payviewmarketplace.netlify.app", // your Netlify site
-    "http://localhost:3000" // local frontend
+    "https://payview-marketplace-4.onrender.com" // local frontend
   ],
   credentials: true
 }));
