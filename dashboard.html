@@ -5,21 +5,31 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Owner Dashboard - PayView Marketplace</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar owner-navbar">
         <div class="container">
             <div class="nav-brand">
-                <h1>PayView<span class="neon">Marketplace</span></h1>
+                <h1><i class="fas fa-crown"></i> PayView<span class="neon">Owner</span></h1>
             </div>
             <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="listings.html">Listings</a></li>
-                <li><a href="contact.html">Contact</a></li>
-                <li><a href="dashboard.html" class="btn-login active">Dashboard</a></li>
-                <li><a href="index.html" id="logoutBtn" class="btn-logout">Logout</a></li>
+                <li><a href="dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="upload.html"><i class="fas fa-plus-circle"></i> New Listing</a></li>
+                <li><a href="inbox.html"><i class="fas fa-inbox"></i> Inbox</a></li>
+                <li class="profile-dropdown">
+                    <button class="profile-btn" id="profileBtn">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <div class="profile-menu" id="profileMenu">
+                        <a href="dashboard.html"><i class="fas fa-chart-line"></i> View Analytics</a>
+                        <a href="dashboard.html"><i class="fas fa-user-edit"></i> Edit Profile</a>
+                        <a href="dashboard.html"><i class="fas fa-cog"></i> Settings</a>
+                        <div class="divider"></div>
+                        <a href="index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </li>
             </ul>
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -29,44 +39,115 @@
         </div>
     </nav>
 
-    <!-- Dashboard Header -->
-    <section class="dashboard-header">
+    <!-- Top Action Bar -->
+    <div class="top-action-bar">
         <div class="container">
-            <h1>Owner Dashboard</h1>
-            <p>Manage your listings and connect with buyers</p>
+            <div class="action-buttons">
+                <button class="action-btn" data-section="home">
+                    <i class="fas fa-home"></i> Home
+                </button>
+                <button class="action-btn" data-section="about">
+                    <i class="fas fa-info-circle"></i> About
+                </button>
+                <button class="action-btn" data-section="listings">
+                    <i class="fas fa-list"></i> My Listings
+                </button>
+                <button class="action-btn" data-section="contact">
+                    <i class="fas fa-phone"></i> Contact
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="main-content">
+        <!-- Dashboard Content -->
+        <div class="content-section active" id="dashboardSection">
+    <section class="dashboard-header owner-header">
+        <div class="container">
+            <div class="owner-welcome">
+                <div class="owner-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="owner-info">
+                    <h1>Welcome back, <span id="ownerName">Owner</span>!</h1>
+                    <p>Manage your business and connect with customers</p>
+                    <div class="owner-status">
+                        <span class="status-badge verified"><i class="fas fa-check-circle"></i> Verified Seller</span>
+                        <span class="status-badge premium"><i class="fas fa-star"></i> Premium Account</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Actions Bar -->
+    <section class="quick-actions">
+        <div class="container">
+            <div class="action-buttons">
+                <button class="action-btn primary" id="createListingBtn">
+                    <i class="fas fa-plus"></i>
+                    <span>Create Listing</span>
+                </button>
+                <button class="action-btn secondary" id="viewAnalytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>View Analytics</span>
+                </button>
+                <button class="action-btn secondary" id="manageProfile">
+                    <i class="fas fa-user-edit"></i>
+                    <span>Edit Profile</span>
+                </button>
+                <button class="action-btn secondary" id="viewMessages">
+                    <i class="fas fa-envelope"></i>
+                    <span>Messages</span>
+                    <span class="notification-badge" id="messageCount">0</span>
+                </button>
+            </div>
         </div>
     </section>
 
     <!-- Dashboard Stats -->
-    <section class="dashboard-stats">
+    <section class="dashboard-stats owner-stats">
         <div class="container">
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon">📋</div>
+                <div class="stat-card total-listings">
+                    <div class="stat-icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
                     <div class="stat-info">
                         <h3 id="totalListings">0</h3>
                         <p>Total Listings</p>
+                        <span class="stat-change positive">+12% this month</span>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">👁️</div>
+                <div class="stat-card total-views">
+                    <div class="stat-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
                     <div class="stat-info">
                         <h3 id="totalViews">0</h3>
                         <p>Total Views</p>
+                        <span class="stat-change positive">+25% this week</span>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">💬</div>
+                <div class="stat-card total-inquiries">
+                    <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
                     <div class="stat-info">
                         <h3 id="totalMessages">0</h3>
-                        <p>Messages</p>
+                        <p>Inquiries</p>
+                        <span class="stat-change positive">+8% today</span>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-icon">✅</div>
+                <div class="stat-card earnings">
+                    <div class="stat-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
                     <div class="stat-info">
-                        <h3 id="verifiedListings">0</h3>
-                        <p>Verified Listings</p>
+                        <h3 id="totalEarnings">0 RWF</h3>
+                        <p>Potential Earnings</p>
+                        <span class="stat-change positive">+15% this month</span>
                     </div>
                 </div>
             </div>
@@ -74,20 +155,89 @@
     </section>
 
     <!-- Dashboard Content -->
-    <section class="dashboard-content">
+    <section class="dashboard-content owner-content">
         <div class="container">
-            <div class="dashboard-actions">
-                <button class="btn btn-primary" id="createListingBtn">+ Create New Listing</button>
-            </div>
-
-            <!-- My Listings -->
-            <div class="dashboard-section">
-                <h2>My Listings</h2>
-                <div class="listings-grid" id="myListingsGrid">
-                    <!-- Owner's listings will be loaded here -->
+            <div class="content-grid">
+                <!-- Recent Listings -->
+                <div class="dashboard-section recent-listings">
+                    <div class="section-header">
+                        <h2><i class="fas fa-clock"></i> Recent Listings</h2>
+                        <a href="listings.html" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="listings-grid" id="recentListingsGrid">
+                        <!-- Recent listings will be loaded here -->
+                    </div>
+                    <div class="no-listings" id="noRecentListings" style="display: none;">
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <h3>No listings yet</h3>
+                            <p>Create your first listing to start selling</p>
+                            <button class="btn btn-primary" id="createFirstListing">Create Listing</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="no-listings" id="noMyListings" style="display: none;">
-                    <p>You haven't created any listings yet. <button class="btn-link" id="createFirstListing">Create your first listing</button></p>
+
+                <!-- Performance Chart -->
+                <div class="dashboard-section performance">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-bar"></i> Performance Overview</h2>
+                        <select id="timeRange" class="time-selector">
+                            <option value="7">Last 7 days</option>
+                            <option value="30">Last 30 days</option>
+                            <option value="90">Last 3 months</option>
+                        </select>
+                    </div>
+                    <div class="performance-chart">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="dashboard-section activity">
+                    <div class="section-header">
+                        <h2><i class="fas fa-history"></i> Recent Activity</h2>
+                    </div>
+                    <div class="activity-feed" id="activityFeed">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p>Welcome to PayView! Your account is now active.</p>
+                                <span class="activity-time">Just now</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Tips -->
+                <div class="dashboard-section tips">
+                    <div class="section-header">
+                        <h2><i class="fas fa-lightbulb"></i> Seller Tips</h2>
+                    </div>
+                    <div class="tips-list">
+                        <div class="tip-item">
+                            <i class="fas fa-camera"></i>
+                            <div class="tip-content">
+                                <h4>High-Quality Photos</h4>
+                                <p>Use clear, well-lit photos to attract more buyers</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-tags"></i>
+                            <div class="tip-content">
+                                <h4>Detailed Descriptions</h4>
+                                <p>Provide comprehensive details about your listing</p>
+                            </div>
+                        </div>
+                        <div class="tip-item">
+                            <i class="fas fa-clock"></i>
+                            <div class="tip-content">
+                                <h4>Quick Responses</h4>
+                                <p>Respond to inquiries within 24 hours</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -199,9 +349,140 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Footer -->
+        <!-- About Section -->
+        <div class="content-section" id="aboutSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-info-circle"></i> About PayView Marketplace</h2>
+                    </div>
+                    <div class="about-content">
+                        <div class="about-grid">
+                            <div class="about-card">
+                                <i class="fas fa-crown"></i>
+                                <h3>Premium Platform</h3>
+                                <p>PayView is Rwanda's leading marketplace connecting property owners with serious buyers and tenants.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-shield-alt"></i>
+                                <h3>Verified Listings</h3>
+                                <p>All listings go through our verification process to ensure authenticity and quality.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-handshake"></i>
+                                <h3>Direct Communication</h3>
+                                <p>Connect directly with owners through our secure messaging system and contact options.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-chart-line"></i>
+                                <h3>Analytics Dashboard</h3>
+                                <p>Track your listing performance with detailed analytics and insights.</p>
+                            </div>
+                        </div>
+                        <div class="about-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">1000+</div>
+                                <div class="stat-label">Active Listings</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">500+</div>
+                                <div class="stat-label">Happy Owners</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">24/7</div>
+                                <div class="stat-label">Support</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- My Listings Section -->
+        <div class="content-section" id="listingsSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-list"></i> My Active Listings</h2>
+                        <a href="upload.html" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Listing</a>
+                    </div>
+                    <div class="listings-grid" id="myListings">
+                        <!-- Owner's listings will be loaded here -->
+                    </div>
+                    <div id="noMyListings" class="no-listings">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No listings yet</h3>
+                        <p>Create your first listing to start selling</p>
+                        <a href="upload.html" class="btn btn-primary">Create Listing</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="content-section" id="contactSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-phone"></i> Contact Us</h2>
+                    </div>
+                    <div class="contact-content">
+                        <div class="contact-grid">
+                            <div class="contact-card">
+                                <i class="fas fa-envelope"></i>
+                                <h3>Email Support</h3>
+                                <p>support@payviewmarketplace.com</p>
+                                <p>Get help with your account and listings</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-phone"></i>
+                                <h3>Phone Support</h3>
+                                <p>+250 123 456 789</p>
+                                <p>Call us for immediate assistance</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>Office Location</h3>
+                                <p>Kigali, Rwanda</p>
+                                <p>Visit our office for in-person support</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-clock"></i>
+                                <h3>Business Hours</h3>
+                                <p>Monday - Friday: 8AM - 6PM</p>
+                                <p>Saturday: 9AM - 4PM</p>
+                            </div>
+                        </div>
+                        <div class="contact-form-section">
+                            <h3>Send us a Message</h3>
+                            <form id="contactForm" class="contact-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contactName">Name</label>
+                                        <input type="text" id="contactName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactEmail">Email</label>
+                                        <input type="email" id="contactEmail" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactSubject">Subject</label>
+                                    <input type="text" id="contactSubject" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactMessage">Message</label>
+                                    <textarea id="contactMessage" rows="5" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -226,7 +507,7 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
 

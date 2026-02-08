@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Browse Listings - PayView Marketplace</title>
+    <title>PayView Marketplace - Home</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Navigation -->
@@ -22,9 +23,9 @@
                 </div>
             </div>
             <ul class="nav-menu" id="navMenu">
-                <li><a href="client-home.html"><i class="fas fa-arrow-left"></i></a></li>
+                <li><a href="client-home.html" class="active">Home</a></li>
                 <li><a href="about.html">About</a></li>
-                <li><a href="listings.html" class="active">Listings</a></li>
+                <li><a href="listings.html">Listings</a></li>
                 <li><a href="contact.html">Contact</a></li>
             </ul>
             <div class="hamburger" id="hamburger">
@@ -35,52 +36,31 @@
         </div>
     </nav>
 
-    <!-- Listings Header -->
-    <section class="page-hero">
-        <div class="container">
-            <h1>Browse All Listings</h1>
-            <p>Discover houses, cars, land, and more</p>
-            <div class="filter-bar">
-                <select id="categoryFilter" class="filter-select">
-                    <option value="all">All Categories</option>
-                    <option value="house">Houses</option>
-                    <option value="car">Cars</option>
-                    <option value="land">Land</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="services">Services</option>
-                    <option value="other">Other</option>
-                </select>
-                <select id="sortFilter" class="filter-select">
-                    <option value="newest">Newest First</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                </select>
-            </div>
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome to PayView Marketplace</h1>
+            <p class="hero-subtitle">Discover amazing products from trusted sellers</p>
         </div>
     </section>
 
-
-    <!-- Listings Grid -->
-    <section class="listings-section">
+    <!-- Recommended Listings Section -->
+    <section class="sample-listings">
         <div class="container">
-            <div class="listings-grid" id="listingsGrid">
-                <!-- Listings will be loaded here -->
+            <h2 class="section-title">Recommended for You</h2>
+            <div class="listings-grid" id="recommendedListings">
+                <!-- Recommended listings will be loaded here -->
             </div>
-            <div class="no-listings" id="noListings" style="display: none;">
-                <p>No listings found. Try adjusting your filters.</p>
+            <div class="text-center">
+                <a href="listings.html" class="btn btn-primary">View All Listings</a>
             </div>
         </div>
     </section>
-
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
-                <div class="footer-section">
-                    <h3>PayView Marketplace</h3>
-                    <p>Connecting buyers and sellers across Rwanda and beyond.</p>
-                </div>
                 <div class="footer-section">
                     <h4>Quick Links</h4>
                     <ul>
@@ -98,6 +78,27 @@
     </footer>
 
     <script type="module" src="script.js"></script>
-</body>
-</html>
+    <script>
+        // Load recommended listings on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadRecommendedListings();
+            initSearch();
+        });
 
+        async function loadRecommendedListings() {
+            try {
+                const listings = await getListings();
+
+                // Show top 6 recommended listings (you can implement more sophisticated recommendation logic)
+                const recommended = listings.slice(0, 6);
+                displayListings(recommended, 'recommendedListings');
+            } catch (error) {
+                console.error('Error loading recommended listings:', error);
+                // Fallback to sample data
+                displayListings(sampleListings.slice(0, 6), 'recommendedListings');
+            }
+        }
+    </script>
+</body>
+</html></content>
+<parameter name="filePath">/Users/digitalaxis/bebe/client-home.html

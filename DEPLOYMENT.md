@@ -15,7 +15,8 @@ A modern marketplace application for buying and selling properties, cars, land, 
 
 - **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
 - **Backend**: Node.js with Express
-- **Database**: Firebase (Firestore, Authentication, Storage)
+- **Database**: MongoDB with Mongoose ODM
+- **Authentication**: JWT with bcrypt password hashing
 - **Styling**: Custom CSS with modern UI framework
 
 ## Getting Started
@@ -24,7 +25,7 @@ A modern marketplace application for buying and selling properties, cars, land, 
 
 - Node.js >= 18
 - npm or yarn
-- Firebase account
+- MongoDB (local or cloud instance)
 
 ### Installation
 
@@ -66,16 +67,46 @@ The application will be available at `http://localhost:3000`
 3. **Set environment variables** (if needed):
    - `NODE_ENV`: `production`
    - `PORT`: `3000`
+   - `MONGODB_URI`: Your MongoDB connection string (see MongoDB setup below)
+   - `JWT_SECRET`: A secure random string for JWT tokens
 
 4. **Deploy**:
    - Click "Create Web Service"
    - Render will automatically deploy on every push to your main branch
 
+### MongoDB Setup
+
+This application uses MongoDB for data storage. You have two options:
+
+#### Option 1: MongoDB Atlas (Cloud - Recommended for Production)
+
+1. Go to [MongoDB Atlas](https://www.mongodb.com/atlas)
+2. Create a free account and cluster
+3. Get your connection string from the "Connect" section
+4. Update your `MONGODB_URI` environment variable with the connection string
+
+#### Option 2: Local MongoDB (Development Only)
+
+1. Install MongoDB locally
+2. Start MongoDB service
+3. Use default connection: `mongodb://localhost:27017/payview-marketplace`
+
+### Environment Variables
+
+Create a `.env` file in your project root with:
+
+```env
+MONGODB_URI=your-mongodb-connection-string
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+PORT=3000
+NODE_ENV=production
+```
+
 ### After Deployment:
 
 - Your frontend will be accessible at your Render URL
-- Update CORS origins in `index.js` with your Render URL
-- Update Firebase security rules if accessing Firestore
+- Update CORS origins in `server.js` with your Render URL
+- Ensure MongoDB connection string is properly configured
 
 ## Project Structure
 
@@ -93,15 +124,16 @@ bebe/
 ├── index.js            # Express server
 ├── package.json        # Dependencies
 ├── render.yaml         # Render configuration
+├── server.js           # Express server with MongoDB
+├── .env               # Environment variables
 └── src/
-    ├── firebase.js     # Firebase configuration
-    └── dataconnect-generated/
+    └── (empty - Firebase files removed)
 ```
 
 ## Key Functionality
 
 ### Authentication
-- Local registration with email and password
+- JWT-based authentication with MongoDB storage
 - Login validation
 - Session management via localStorage
 - Automatic logout with redirect to home
@@ -132,8 +164,11 @@ app.use(cors({
 }));
 ```
 
-### Update Firebase Config
-If needed, update Firebase configuration in `src/firebase.js`
+### Environment Configuration
+Update the following environment variables in `.env`:
+- `MONGODB_URI`: Your MongoDB connection string
+- `JWT_SECRET`: A secure random string for JWT signing
+- `PORT`: Server port (default: 3000)
 
 ### Styling
 All styles are in `styles.css`. The design uses CSS variables for easy theming:
@@ -154,22 +189,22 @@ All styles are in `styles.css`. The design uses CSS variables for easy theming:
 - Verify password is at least 6 characters
 
 ### Images not loading
-- Check Firebase Storage rules
-- Verify image URLs in console
-- Try different image formats
+- Check base64 encoding in browser console
+- Verify image file sizes (under 10MB recommended)
+- Try different image formats (JPG, PNG, WebP)
 
 ## Performance Optimization
 
-- All listings are cached in localStorage for fast access
-- Images use lazy loading with fallback URLs
+- MongoDB provides efficient data storage and retrieval
+- Images are stored as base64 strings (consider Firebase Storage for production)
 - CSS uses CSS variables for efficient theme switching
-- JavaScript is vanilla (no heavy dependencies)
+- JavaScript uses modern async/await patterns
 
 ## Future Enhancements
 
-- [ ] Backend user authentication with JWT
-- [ ] Real database (PostgreSQL/MongoDB) instead of localStorage
-- [ ] Image upload to Firebase Storage
+- [x] Backend user authentication with JWT ✅
+- [x] Real database (MongoDB) instead of localStorage ✅
+- [ ] Image upload to cloud storage (AWS S3/Firebase Storage)
 - [ ] Payment processing
 - [ ] Real-time notifications
 - [ ] User ratings and reviews

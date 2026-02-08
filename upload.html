@@ -3,22 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Ad - PayView Marketplace</title>
+    <title>Create Listing - PayView Owner</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar owner-navbar">
         <div class="container">
             <div class="nav-brand">
-                <h1>PayView<span class="neon">Marketplace</span></h1>
+                <h1><i class="fas fa-crown"></i> PayView<span class="neon">Owner</span></h1>
             </div>
             <ul class="nav-menu" id="navMenu">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="listings.html">My Listings</a></li>
-                <li><a href="about.html">About</a></li>
-                <li><a href="contact.html">Contact</a></li>
-                <li><a href="#" id="logoutBtn" class="btn btn-secondary">Logout</a></li>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="upload.html" class="active"><i class="fas fa-plus-circle"></i> New Listing</a></li>
+                <li><a href="inbox.html"><i class="fas fa-inbox"></i> Inbox</a></li>
+                <li class="profile-dropdown">
+                    <button class="profile-btn" id="profileBtn">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <div class="profile-menu" id="profileMenu">
+                        <a href="dashboard.html"><i class="fas fa-chart-line"></i> View Analytics</a>
+                        <a href="dashboard.html"><i class="fas fa-user-edit"></i> Edit Profile</a>
+                        <a href="dashboard.html"><i class="fas fa-cog"></i> Settings</a>
+                        <div class="divider"></div>
+                        <a href="index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </li>
             </ul>
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -28,104 +39,383 @@
         </div>
     </nav>
 
-    <!-- Upload Section -->
-    <section class="upload-section">
+    <!-- Top Action Bar -->
+    <div class="top-action-bar">
         <div class="container">
+            <div class="action-buttons">
+                <button class="action-btn" data-section="home">
+                    <i class="fas fa-home"></i> Home
+                </button>
+                <button class="action-btn" data-section="about">
+                    <i class="fas fa-info-circle"></i> About
+                </button>
+                <button class="action-btn" data-section="listings">
+                    <i class="fas fa-list"></i> My Listings
+                </button>
+                <button class="action-btn" data-section="contact">
+                    <i class="fas fa-phone"></i> Contact
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="main-content">
+        <!-- Upload Content -->
+        <div class="content-section active" id="uploadSection">
+    <section class="upload-section owner-upload">
+        <div class="container">
+            <div class="upload-header">
+                <h1><i class="fas fa-plus-circle"></i> Create New Listing</h1>
+                <p>Reach thousands of potential buyers across Rwanda</p>
+            </div>
+
             <div class="upload-container">
-                <div class="upload-card">
-                    <h2>Create New Listing</h2>
-                    <p class="upload-subtitle">Upload your product or property to reach more customers</p>
-                    
-                    <form id="uploadListingForm" class="upload-form">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="listingTitle">Title</label>
-                                <input type="text" id="listingTitle" name="title" placeholder="e.g., Modern 3-Bedroom House" required>
+                <div class="upload-card professional">
+                    <div class="upload-progress">
+                        <div class="progress-steps">
+                            <div class="step active" data-step="1">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Details</span>
+                            </div>
+                            <div class="step" data-step="2">
+                                <i class="fas fa-images"></i>
+                                <span>Media</span>
+                            </div>
+                            <div class="step" data-step="3">
+                                <i class="fas fa-check-circle"></i>
+                                <span>Review</span>
                             </div>
                         </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 33%"></div>
+                        </div>
+                    </div>
 
-                        <div class="form-row">
+                    <form id="uploadListingForm" class="upload-form professional">
+                        <!-- Step 1: Basic Details -->
+                        <div class="form-step active" data-step="1">
+                            <div class="step-header">
+                                <h3><i class="fas fa-info-circle"></i> Listing Details</h3>
+                                <p>Provide basic information about your property or item</p>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="listingTitle">Title *</label>
+                                    <input type="text" id="listingTitle" name="title" placeholder="e.g., Modern 3-Bedroom House in Kigali" required>
+                                    <small class="form-help">Choose a descriptive title that highlights key features</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="listingCategory">Category *</label>
+                                    <select id="listingCategory" name="category" required>
+                                        <option value="">Select Category</option>
+                                        <option value="house">🏠 House</option>
+                                        <option value="apartment">🏢 Apartment</option>
+                                        <option value="land">🌄 Land</option>
+                                        <option value="car">🚗 Car</option>
+                                        <option value="motorcycle">🏍️ Motorcycle</option>
+                                        <option value="electronics">📱 Electronics</option>
+                                        <option value="furniture">🪑 Furniture</option>
+                                        <option value="services">🔧 Services</option>
+                                        <option value="other">📦 Other</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="listingPrice">Price (RWF) *</label>
+                                    <input type="number" id="listingPrice" name="price" placeholder="25000000" required min="0">
+                                    <small class="form-help">Enter the selling price in Rwandan Francs</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="listingLocation">Location *</label>
+                                    <input type="text" id="listingLocation" name="location" placeholder="Kigali, Gasabo" required>
+                                    <small class="form-help">Specific location helps buyers find you</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="listingPhone">Phone Number *</label>
+                                    <input type="tel" id="listingPhone" name="phone" placeholder="+250 7XX XXX XXX" required>
+                                    <small class="form-help">Buyers will contact you directly</small>
+                                </div>
+                            </div>
+
                             <div class="form-group">
-                                <label for="listingCategory">Category</label>
-                                <select id="listingCategory" name="category" required>
-                                    <option value="">Select a category</option>
-                                    <option value="house">House</option>
-                                    <option value="apartment">Apartment</option>
-                                    <option value="land">Land</option>
-                                    <option value="car">Car</option>
-                                    <option value="motorcycle">Motorcycle</option>
-                                    <option value="business">Business</option>
-                                    <option value="other">Other</option>
+                                <label for="listingDescription">Description *</label>
+                                <textarea id="listingDescription" name="description" rows="6" placeholder="Describe your property or item in detail. Include features, condition, and any other relevant information..." required></textarea>
+                                <small class="form-help">Detailed descriptions attract more serious buyers</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="listingHashtags">Hashtags (Optional)</label>
+                                <input type="text" id="listingHashtags" name="hashtags" placeholder="#house #kigali #modern #spacious (separate with spaces)">
+                                <small class="form-help">Add hashtags to help buyers find your listing. Example: #house #kigali #modern</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="listingAvailability">Availability *</label>
+                                <select id="listingAvailability" name="availability" required>
+                                    <option value="available">🟢 Available</option>
+                                    <option value="pending">🟡 Pending</option>
+                                    <option value="sold">🔴 Sold</option>
                                 </select>
                             </div>
-                            <div class="form-group">
-                                <label for="listingPrice">Price (RWF)</label>
-                                <input type="number" id="listingPrice" name="price" placeholder="1000000" required>
+
+                            <div class="step-actions">
+                                <button type="button" class="btn btn-secondary next-step">Next: Add Media <i class="fas fa-arrow-right"></i></button>
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="listingLocation">Location</label>
-                                <input type="text" id="listingLocation" name="location" placeholder="e.g., Kigali, Nyarugenge" required>
+                        <!-- Step 2: Media Upload -->
+                        <div class="form-step" data-step="2">
+                            <div class="step-header">
+                                <h3><i class="fas fa-images"></i> Photos & Videos</h3>
+                                <p>Add high-quality images and videos to showcase your listing</p>
+                            </div>
+
+                            <div class="media-upload-section">
+                                <div class="media-upload-area">
+                                    <div class="upload-zone" id="imageUploadZone">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <h4>Upload Photos</h4>
+                                        <p>Drag & drop or click to select images</p>
+                                        <small>JPG, PNG up to 10MB each • Max 10 photos</small>
+                                        <input type="file" id="listingImages" name="images" multiple accept="image/*" style="display: none;">
+                                    </div>
+                                    <div class="uploaded-media" id="uploadedImages"></div>
+                                </div>
+
+                                <div class="media-upload-area">
+                                    <div class="upload-zone" id="videoUploadZone">
+                                        <i class="fas fa-video"></i>
+                                        <h4>Upload Videos (Optional)</h4>
+                                        <p>Show your property in action</p>
+                                        <small>MP4, WebM up to 50MB • Max 2 videos</small>
+                                        <input type="file" id="listingVideos" name="videos" multiple accept="video/*" style="display: none;">
+                                    </div>
+                                    <div class="uploaded-media" id="uploadedVideos"></div>
+                                </div>
+                            </div>
+
+                            <div class="media-tips">
+                                <h4><i class="fas fa-lightbulb"></i> Photo Tips</h4>
+                                <ul>
+                                    <li>Use natural lighting and clean backgrounds</li>
+                                    <li>Show all angles and important features</li>
+                                    <li>Include wide shots and close-ups</li>
+                                    <li>Keep photos under 10MB for faster loading</li>
+                                </ul>
+                            </div>
+
+                            <div class="step-actions">
+                                <button type="button" class="btn btn-outline prev-step"><i class="fas fa-arrow-left"></i> Back</button>
+                                <button type="button" class="btn btn-primary next-step">Review & Publish <i class="fas fa-arrow-right"></i></button>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="listingDescription">Description</label>
-                            <textarea id="listingDescription" name="description" rows="5" placeholder="Describe your listing in detail..." required></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="listingImages">Upload Images</label>
-                            <input type="file" id="listingImages" name="images" accept="image/*" multiple>
-                            <small>You can upload multiple images (JPG, PNG, GIF). Optional if uploading videos.</small>
-                            <div id="imagePreview" class="image-preview"></div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="listingVideo">Upload Videos (Optional)</label>
-                            <input type="file" id="listingVideo" name="videos" accept="video/mp4" multiple>
-                            <small>Upload one or more MP4 videos to showcase your product. Optional if uploading images.</small>
-                            <div id="videoPreview" class="video-preview"></div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="listingContact">Contact Phone</label>
-                                <input type="tel" id="listingContact" name="contact" placeholder="+250 7XX XXX XXX" required>
+                        <!-- Step 3: Review & Publish -->
+                        <div class="form-step" data-step="3">
+                            <div class="step-header">
+                                <h3><i class="fas fa-check-circle"></i> Review & Publish</h3>
+                                <p>Review your listing details before publishing</p>
                             </div>
-                            <div class="form-group">
-                                <label for="listingWhatsapp">WhatsApp Number</label>
-                                <input type="tel" id="listingWhatsapp" name="whatsapp" placeholder="+250 7XX XXX XXX" required>
+
+                            <div class="listing-preview" id="listingPreview">
+                                <div class="preview-header">
+                                    <h4>Listing Preview</h4>
+                                    <span class="preview-badge">Ready to Publish</span>
+                                </div>
+                                <div class="preview-content">
+                                    <div class="preview-media">
+                                        <div class="preview-placeholder">
+                                            <i class="fas fa-images"></i>
+                                            <span>Preview will show here</span>
+                                        </div>
+                                    </div>
+                                    <div class="preview-details">
+                                        <h3 id="previewTitle">Title will appear here</h3>
+                                        <p class="preview-price" id="previewPrice">Price will appear here</p>
+                                        <p class="preview-location" id="previewLocation">Location will appear here</p>
+                                        <p class="preview-description" id="previewDescription">Description will appear here</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="publishing-options">
+                                <div class="option-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="featuredListing" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-content">
+                                            <strong>Featured Listing (500 RWF)</strong>
+                                            <p>Appear at the top of search results for 30 days</p>
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="option-group">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="prioritySupport" checked>
+                                        <span class="checkmark"></span>
+                                        <div class="option-content">
+                                            <strong>Priority Support</strong>
+                                            <p>Get faster responses from our support team</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="step-actions final-actions">
+                                <button type="button" class="btn btn-outline prev-step"><i class="fas fa-arrow-left"></i> Back</button>
+                                <button type="submit" class="btn btn-success" id="publishBtn">
+                                    <i class="fas fa-rocket"></i> Publish Listing
+                                </button>
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="listingVerify" name="verify" required>
-                                <span>I confirm this information is accurate and complete</span>
-                            </label>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary btn-block">Create Listing</button>
                     </form>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- My Listings Section -->
-    <section class="my-listings-section">
-        <div class="container">
-            <h2>Your Listings</h2>
-            <div id="myListings" class="listings-grid">
-                <p class="no-listings">No listings yet. Create your first listing above!</p>
-            </div>
         </div>
-    </section>
 
-    <!-- Footer -->
+        <!-- About Section -->
+        <div class="content-section" id="aboutSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-info-circle"></i> About PayView Marketplace</h2>
+                    </div>
+                    <div class="about-content">
+                        <div class="about-grid">
+                            <div class="about-card">
+                                <i class="fas fa-crown"></i>
+                                <h3>Premium Platform</h3>
+                                <p>PayView is Rwanda's leading marketplace connecting property owners with serious buyers and tenants.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-shield-alt"></i>
+                                <h3>Verified Listings</h3>
+                                <p>All listings go through our verification process to ensure authenticity and quality.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-handshake"></i>
+                                <h3>Direct Communication</h3>
+                                <p>Connect directly with owners through our secure messaging system and contact options.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-chart-line"></i>
+                                <h3>Analytics Dashboard</h3>
+                                <p>Track your listing performance with detailed analytics and insights.</p>
+                            </div>
+                        </div>
+                        <div class="about-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">1000+</div>
+                                <div class="stat-label">Active Listings</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">500+</div>
+                                <div class="stat-label">Happy Owners</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">24/7</div>
+                                <div class="stat-label">Support</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- My Listings Section -->
+        <div class="content-section" id="listingsSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-list"></i> My Active Listings</h2>
+                        <a href="upload.html" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Listing</a>
+                    </div>
+                    <div class="listings-grid" id="myListings">
+                        <!-- Owner's listings will be loaded here -->
+                    </div>
+                    <div id="noMyListings" class="no-listings">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No listings yet</h3>
+                        <p>Create your first listing to start selling</p>
+                        <a href="upload.html" class="btn btn-primary">Create Listing</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="content-section" id="contactSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-phone"></i> Contact Us</h2>
+                    </div>
+                    <div class="contact-content">
+                        <div class="contact-grid">
+                            <div class="contact-card">
+                                <i class="fas fa-envelope"></i>
+                                <h3>Email Support</h3>
+                                <p>support@payviewmarketplace.com</p>
+                                <p>Get help with your account and listings</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-phone"></i>
+                                <h3>Phone Support</h3>
+                                <p>+250 123 456 789</p>
+                                <p>Call us for immediate assistance</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>Office Location</h3>
+                                <p>Kigali, Rwanda</p>
+                                <p>Visit our office for in-person support</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-clock"></i>
+                                <h3>Business Hours</h3>
+                                <p>Monday - Friday: 8AM - 6PM</p>
+                                <p>Saturday: 9AM - 4PM</p>
+                            </div>
+                        </div>
+                        <div class="contact-form-section">
+                            <h3>Send us a Message</h3>
+                            <form id="contactForm" class="contact-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contactName">Name</label>
+                                        <input type="text" id="contactName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactEmail">Email</label>
+                                        <input type="email" id="contactEmail" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactSubject">Subject</label>
+                                    <input type="text" id="contactSubject" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactMessage">Message</label>
+                                    <textarea id="contactMessage" rows="5" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
     <footer class="footer">
         <div class="container">
             <div class="footer-content">
@@ -156,6 +446,6 @@
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

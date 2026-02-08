@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Home - PayView Owner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar owner-navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1><i class="fas fa-crown"></i> PayView<span class="neon">Owner</span></h1>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="upload.html"><i class="fas fa-plus-circle"></i> New Listing</a></li>
+                <li><a href="inbox.html"><i class="fas fa-inbox"></i> Inbox</a></li>
+                <li class="profile-dropdown">
+                    <button class="profile-btn" id="profileBtn">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <div class="profile-menu" id="profileMenu">
+                        <a href="dashboard.html"><i class="fas fa-chart-line"></i> View Analytics</a>
+                        <a href="dashboard.html"><i class="fas fa-user-edit"></i> Edit Profile</a>
+                        <a href="dashboard.html"><i class="fas fa-cog"></i> Settings</a>
+                        <div class="divider"></div>
+                        <a href="index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Top Action Bar -->
+    <div class="top-action-bar">
+        <div class="container">
+            <div class="action-buttons">
+                <button class="action-btn active" data-section="home">
+                    <i class="fas fa-home"></i> Home
+                </button>
+                <button class="action-btn" data-section="about">
+                    <i class="fas fa-info-circle"></i> About
+                </button>
+                <button class="action-btn" data-section="listings">
+                    <i class="fas fa-list"></i> My Listings
+                </button>
+                <button class="action-btn" data-section="contact">
+                    <i class="fas fa-phone"></i> Contact
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <div class="main-content">
+        <!-- Default Home Content -->
+        <div class="content-section active" id="homeSection">
+            <!-- Owner Home Header -->
+            <section class="page-hero owner-home-hero">
+                <div class="container">
+                    <h1><i class="fas fa-home"></i> My Marketplace Home</h1>
+                    <p>View your listings and discover related opportunities</p>
+                </div>
+            </section>
+
+            <!-- Related Listings Section -->
+            <section class="related-listings-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-search"></i> Related Listings</h2>
+                        <p>Discover similar products in your area</p>
+                    </div>
+                    <div class="listings-grid" id="relatedListings">
+                        <!-- Related listings will be loaded here -->
+                    </div>
+                    <div class="text-center">
+                        <a href="listings.html" class="btn btn-secondary">View All Listings</a>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="quick-actions">
+                <div class="container">
+                    <h2>Quick Actions</h2>
+                    <div class="actions-grid">
+                        <div class="action-card">
+                            <i class="fas fa-plus-circle"></i>
+                            <h3>Create Listing</h3>
+                            <p>Add a new product or service</p>
+                            <a href="upload.html" class="btn btn-primary">Get Started</a>
+                        </div>
+                        <div class="action-card">
+                            <i class="fas fa-chart-line"></i>
+                            <h3>View Analytics</h3>
+                            <p>Check your listing performance</p>
+                            <a href="dashboard.html" class="btn btn-primary">View Dashboard</a>
+                        </div>
+                        <div class="action-card">
+                            <i class="fas fa-envelope"></i>
+                            <h3>Messages</h3>
+                            <p>Connect with potential buyers</p>
+                            <a href="inbox.html" class="btn btn-primary">View Messages</a>
+                        </div>
+                        <div class="action-card">
+                            <i class="fas fa-cog"></i>
+                            <h3>Account Settings</h3>
+                            <p>Manage your profile and preferences</p>
+                            <a href="dashboard.html" class="btn btn-primary">Settings</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- About Section -->
+        <div class="content-section" id="aboutSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-info-circle"></i> About PayView Marketplace</h2>
+                    </div>
+                    <div class="about-content">
+                        <div class="about-grid">
+                            <div class="about-card">
+                                <i class="fas fa-crown"></i>
+                                <h3>Premium Platform</h3>
+                                <p>PayView is Rwanda's leading marketplace connecting property owners with serious buyers and tenants.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-shield-alt"></i>
+                                <h3>Verified Listings</h3>
+                                <p>All listings go through our verification process to ensure authenticity and quality.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-handshake"></i>
+                                <h3>Direct Communication</h3>
+                                <p>Connect directly with owners through our secure messaging system and contact options.</p>
+                            </div>
+                            <div class="about-card">
+                                <i class="fas fa-chart-line"></i>
+                                <h3>Analytics Dashboard</h3>
+                                <p>Track your listing performance with detailed analytics and insights.</p>
+                            </div>
+                        </div>
+                        <div class="about-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">1000+</div>
+                                <div class="stat-label">Active Listings</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">500+</div>
+                                <div class="stat-label">Happy Owners</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">24/7</div>
+                                <div class="stat-label">Support</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- My Listings Section -->
+        <div class="content-section" id="listingsSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-list"></i> My Active Listings</h2>
+                        <a href="upload.html" class="btn btn-primary"><i class="fas fa-plus"></i> Create New Listing</a>
+                    </div>
+                    <div class="listings-grid" id="myListings">
+                        <!-- Owner's listings will be loaded here -->
+                    </div>
+                    <div id="noMyListings" class="no-listings">
+                        <i class="fas fa-inbox"></i>
+                        <h3>No listings yet</h3>
+                        <p>Create your first listing to start selling</p>
+                        <a href="upload.html" class="btn btn-primary">Create Listing</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Contact Section -->
+        <div class="content-section" id="contactSection">
+            <section class="page-section">
+                <div class="container">
+                    <div class="section-header">
+                        <h2><i class="fas fa-phone"></i> Contact Us</h2>
+                    </div>
+                    <div class="contact-content">
+                        <div class="contact-grid">
+                            <div class="contact-card">
+                                <i class="fas fa-envelope"></i>
+                                <h3>Email Support</h3>
+                                <p>support@payviewmarketplace.com</p>
+                                <p>Get help with your account and listings</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-phone"></i>
+                                <h3>Phone Support</h3>
+                                <p>+250 123 456 789</p>
+                                <p>Call us for immediate assistance</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <h3>Office Location</h3>
+                                <p>Kigali, Rwanda</p>
+                                <p>Visit our office for in-person support</p>
+                            </div>
+                            <div class="contact-card">
+                                <i class="fas fa-clock"></i>
+                                <h3>Business Hours</h3>
+                                <p>Monday - Friday: 8AM - 6PM</p>
+                                <p>Saturday: 9AM - 4PM</p>
+                            </div>
+                        </div>
+                        <div class="contact-form-section">
+                            <h3>Send us a Message</h3>
+                            <form id="contactForm" class="contact-form">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="contactName">Name</label>
+                                        <input type="text" id="contactName" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="contactEmail">Email</label>
+                                        <input type="email" id="contactEmail" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactSubject">Subject</label>
+                                    <input type="text" id="contactSubject" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contactMessage">Message</label>
+                                    <textarea id="contactMessage" rows="5" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
