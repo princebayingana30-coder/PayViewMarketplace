@@ -147,8 +147,7 @@ function initializeStorage() {
 function initNavigation() {
     const hamburger = document.getElementById('hamburger');
     const navMenu = document.getElementById('navMenu');
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
+    
     if (hamburger && navMenu) {
         hamburger.addEventListener('click', () => {
             navMenu.classList.toggle('active');
@@ -161,368 +160,118 @@ function initNavigation() {
             navMenu.classList.remove('active');
         }
     });
-
-    // Handle navigation based on authentication status
-    const loginBtn = document.querySelector('.btn-login');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const dashboardLink = document.querySelector('a[href*="dashboard"]');
-
-    if (currentUser) {
-        // User is logged in - hide login button, show logout/dashboard
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (logoutBtn) logoutBtn.style.display = 'inline-block';
-        if (dashboardLink) dashboardLink.style.display = 'inline-block';
-
-        // Add user greeting
-        const navBrand = document.querySelector('.nav-brand h1');
-        if (navBrand && !navBrand.querySelector('.user-greeting')) {
-            const greeting = document.createElement('span');
-            greeting.className = 'user-greeting';
-            greeting.style.cssText = 'font-size: 0.8rem; color: var(--neon-cyan); margin-left: 10px;';
-            greeting.textContent = `Welcome, ${currentUser.name.split(' ')[0]}!`;
-            navBrand.appendChild(greeting);
-        }
-    } else {
-        // User is not logged in - show login button, hide logout/dashboard
-        if (loginBtn) loginBtn.style.display = 'inline-block';
-        if (logoutBtn) logoutBtn.style.display = 'none';
-        if (dashboardLink) dashboardLink.style.display = 'none';
-    }
 }
 
 // Authentication
-// API Base URL
-const API_BASE = 'https://payview-marketplace-4.onrender.com/api';
-
-// Authentication functions with API + localStorage fallback
-async function register(userData) {
-    try {
-        const response = await fetch(`${API_BASE}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(userData)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            return { success: false, message: data.message || 'Registration failed' };
-        }
-
-        // Store token and user data
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        localStorage.setItem('userRole', 'owner');
-        return { success: true, user: data.user };
-    } catch (error) {
-        console.error('Registration error:', error);
-        // Fallback: save user locally so app works without API
-        try {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            if (users.some(u => u.email === userData.email)) {
-                return { success: false, message: 'Email already registered.' };
-            }
-            const user = {
-                id: Date.now(),
-                _id: String(Date.now()),
-                name: userData.name,
-                email: userData.email,
-                phone: userData.phone || '',
-                createdAt: new Date().toISOString()
-            };
-            users.push({ ...user, password: userData.password });
-            localStorage.setItem('users', JSON.stringify(users));
-            localStorage.setItem('token', 'local-' + user.id);
-            localStorage.setItem('currentUser', JSON.stringify(user));
-            localStorage.setItem('userRole', 'owner');
-            return { success: true, user };
-        } catch (e) {
-            return { success: false, message: 'Network error. Please try again.' };
-        }
-    }
-}
-
-async function login(email, password) {
-    try {
-        const response = await fetch(`${API_BASE}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            return { success: false, message: data.message || 'Login failed' };
-        }
-
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('currentUser', JSON.stringify(data.user));
-        localStorage.setItem('userRole', 'owner');
-        return { success: true, user: data.user };
-    } catch (error) {
-        console.error('Login error:', error);
-        // Fallback: check localStorage users
-        try {
-            const users = JSON.parse(localStorage.getItem('users') || '[]');
-            const user = users.find(u => u.email === email && u.password === password);
-            if (!user) {
-                return { success: false, message: 'Invalid email or password.' };
-            }
-            const { password: _, ...userWithoutPassword } = user;
-            const safeUser = { ...userWithoutPassword, id: user.id, _id: user._id || user.id };
-            localStorage.setItem('token', 'local-' + user.id);
-            localStorage.setItem('currentUser', JSON.stringify(safeUser));
-            localStorage.setItem('userRole', 'owner');
-            return { success: true, user: safeUser };
-        } catch (e) {
-            return { success: false, message: 'Network error. Please try again.' };
-        }
-    }
-}
-
-function logout() {
-    localStorage.removeItem('token');
-    localStorage.setItem('currentUser', JSON.stringify(null));
-    localStorage.removeItem('userRole'); // Clear user role on logout
-    window.location.href = 'index.html';
-}
-
-// Check authentication with API
 function checkAuth() {
-    const token = localStorage.getItem('token');
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-
-    if (!token || !currentUser) {
+    if (currentUser && window.location.pathname.includes('dashboard.html')) {
+        return true;
+    } else if (!currentUser && window.location.pathname.includes('dashboard.html')) {
+        window.location.href = 'login.html';
         return false;
     }
-
-    // For dashboard access
-    if (window.location.pathname.includes('dashboard.html')) {
-        return true;
-    }
-
     return !!currentUser;
 }
 
-function isLocalUser() {
-    const token = localStorage.getItem('token');
-    return token && String(token).startsWith('local-');
-}
-
-function getLocalListings() {
-    return JSON.parse(localStorage.getItem('localListings') || '[]');
-}
-
-function setLocalListings(listings) {
-    localStorage.setItem('localListings', JSON.stringify(listings));
-}
-
-// Listings Management with API + localStorage fallback
-async function getListings() {
-    if (isLocalUser()) {
-        return getLocalListings();
+function login(email, password) {
+    const users = JSON.parse(localStorage.getItem('users'));
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        return { success: true, user };
     }
-    try {
-        const response = await fetch(`${API_BASE}/listings`);
-        const data = await response.json();
-        if (!response.ok) {
-            console.error('Get listings error:', data.message);
-            return getLocalListings();
+    return { success: false, message: 'Invalid email or password' };
+}
+
+function register(userData) {
+    const users = JSON.parse(localStorage.getItem('users'));
+    
+    if (users.find(u => u.email === userData.email)) {
+        return { success: false, message: 'Email already registered' };
+    }
+    
+    if (userData.password !== userData.confirmPassword) {
+        return { success: false, message: 'Passwords do not match' };
+    }
+    
+    const newUser = {
+        id: Date.now(),
+        name: userData.name,
+        email: userData.email,
+        phone: userData.phone,
+        password: userData.password,
+        createdAt: new Date().toISOString()
+    };
+    
+    users.push(newUser);
+    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('currentUser', JSON.stringify(newUser));
+    
+    return { success: true, user: newUser };
+}
+
+function logout() {
+    localStorage.setItem('currentUser', JSON.stringify(null));
+    window.location.href = 'index.html';
+}
+
+// Listings Management
+function getListings() {
+    return JSON.parse(localStorage.getItem('listings'));
+}
+
+function saveListing(listing) {
+    const listings = getListings();
+    if (listing.id) {
+        const index = listings.findIndex(l => l.id === listing.id);
+        if (index !== -1) {
+            listings[index] = listing;
         }
-        return data.listings || [];
-    } catch (error) {
-        console.error('Get listings error:', error);
-        return getLocalListings();
+    } else {
+        listing.id = Date.now();
+        listing.createdAt = new Date().toISOString();
+        listing.views = 0;
+        listing.ownerId = JSON.parse(localStorage.getItem('currentUser')).id;
+        listings.push(listing);
     }
+    localStorage.setItem('listings', JSON.stringify(listings));
+    return listing;
 }
 
-async function saveListing(listing) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        throw new Error('Please login to create listings');
-    }
-
-    if (isLocalUser()) {
-        const list = getLocalListings();
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        const id = listing.id || listing._id || String(Date.now());
-        const newListing = {
-            ...listing,
-            _id: id,
-            id: id,
-            ownerId: currentUser.id || currentUser._id,
-            createdAt: listing.createdAt || new Date().toISOString(),
-            views: listing.views || 0
-        };
-        const idx = list.findIndex(l => String(l._id || l.id) === String(id));
-        if (idx >= 0) {
-            list[idx] = { ...list[idx], ...newListing };
-        } else {
-            list.push(newListing);
-        }
-        setLocalListings(list);
-        return newListing;
-    }
-
-    try {
-        const method = listing.id ? 'PUT' : 'POST';
-        const url = listing.id ? `${API_BASE}/listings/${listing.id}` : `${API_BASE}/listings`;
-        const response = await fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(listing)
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to save listing');
-        }
-        return data.listing;
-    } catch (error) {
-        console.error('Save listing error:', error);
-        throw error;
-    }
+function deleteListing(id) {
+    const listings = getListings();
+    const filtered = listings.filter(l => l.id !== id);
+    localStorage.setItem('listings', JSON.stringify(filtered));
 }
 
-async function deleteListing(id) {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        throw new Error('Please login to delete listings');
-    }
-    if (isLocalUser()) {
-        const list = getLocalListings().filter(l => String(l._id || l.id) !== String(id));
-        setLocalListings(list);
-        return { success: true };
-    }
-    try {
-        const response = await fetch(`${API_BASE}/listings/${id}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to delete listing');
-        }
-        return { success: true };
-    } catch (error) {
-        console.error('Delete listing error:', error);
-        throw error;
-    }
+function getListingById(id) {
+    const listings = getListings();
+    return listings.find(l => l.id === parseInt(id));
 }
 
-async function getUserListings() {
-    const token = localStorage.getItem('token');
-    if (!token) return [];
-    if (isLocalUser()) {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        const uid = currentUser?.id || currentUser?._id;
-        return getLocalListings().filter(l => String(l.ownerId) === String(uid));
-    }
-    try {
-        const response = await fetch(`${API_BASE}/listings/my`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await response.json();
-        if (!response.ok) {
-            console.error('Get user listings error:', data.message);
-            return [];
-        }
-        return data.listings || [];
-    } catch (error) {
-        console.error('Get user listings error:', error);
-        return [];
-    }
-}
 
-async function getListingById(id) {
-    if (!id) return null;
-    if (isLocalUser()) {
-        const list = getLocalListings();
-        const found = list.find(l => String(l._id || l.id) === String(id));
-        return found || null;
-    }
-    try {
-        const response = await fetch(`${API_BASE}/listings/${id}`);
-        const data = await response.json();
-        if (!response.ok) {
-            console.error('Get listing error:', data.message);
-            return null;
-        }
-        return data.listing || data;
-    } catch (error) {
-        console.error('Get listing error:', error);
-        return null;
-    }
-}
+// -------------------- DISPLAY --------------------
 
-// Display Listings
 function displayListings(listings, containerId, isOwnerView = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     if (listings.length === 0) {
-        const noListings = document.getElementById('noListings') || document.getElementById('noMyListings');
-        if (noListings) noListings.style.display = 'block';
+        container.innerHTML = "<p>No listings found.</p>";
         return;
     }
     
-    // Set proper grid layout for 3 columns
-    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
-    container.style.gap = '2rem';
-    
     container.innerHTML = listings.map(listing => {
-        const listingId = listing._id != null ? listing._id : listing.id;
-        // Check if there are videos first, then images
-        const hasVideos = listing.videos && listing.videos.length > 0;
-        const hasImages = listing.images && listing.images.length > 0;
-
-        let mediaContent = '';
-        let mediaType = '';
-
-        if (hasVideos) {
-            // Show first video as thumbnail with play button
-            mediaContent = `
-                <video class="listing-video" muted preload="metadata">
-                    <source src="${listing.videos[0]}" type="video/mp4">
-                </video>
-                <div class="video-play-overlay" onclick="playVideoFullscreen('${listing.videos[0]}', '${listing.title}')">
-                    <div class="play-button">▶</div>
-                </div>
-            `;
-            mediaType = 'video';
-        } else if (hasImages) {
-            // Show first image
-            mediaContent = `
-                <img src="${listing.images[0]}" alt="${listing.title}" class="listing-image"
-                     onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'">
-            `;
-            mediaType = 'image';
-        } else {
-            // Fallback placeholder
-            mediaContent = `
-                <img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800" alt="${listing.title}" class="listing-image">
-            `;
-            mediaType = 'image';
-        }
-
-        // Format WhatsApp link
-        const whatsappNumber = listing.whatsapp ? listing.whatsapp.replace(/\D/g, '') : '';
-        const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=Hello, I'm interested in your listing: ${listing.title}` : '#';
-
+        const imageUrl = listing.images && listing.images.length > 0 
+            ? listing.images[0] 
+            : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800';
+        
         return `
-            <div class="listing-card instagram-style" data-id="${listingId}">
-                <div class="listing-image-container ${mediaType === 'video' ? 'has-video' : ''}">
-                    ${mediaContent}
-                    ${hasVideos ? `<div class="listing-video-badge">🎥 ${listing.videos.length} Video${listing.videos.length > 1 ? 's' : ''}</div>` : ''}
-                    ${hasImages && !hasVideos ? `<div class="listing-image-badge">📷 ${listing.images.length} Image${listing.images.length > 1 ? 's' : ''}</div>` : ''}
-                </div>
+            <div class="listing-card" data-id="${listing.id}">
+                <img src="${imageUrl}" alt="${listing.title}" class="listing-image" 
+                     onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'">
                 <div class="listing-content">
                     <div class="listing-header">
                         <h3 class="listing-title">${listing.title}</h3>
@@ -531,34 +280,12 @@ function displayListings(listings, containerId, isOwnerView = false) {
                     <div class="listing-category">${listing.category.toUpperCase()}</div>
                     <div class="listing-location">📍 ${listing.location}</div>
                     <div class="listing-price">${formatPrice(listing.price)} RWF</div>
-                    <p class="listing-description">${listing.description.substring(0, 100)}${listing.description.length > 100 ? '...' : ''}</p>
-
-                    ${listing.hashtags && listing.hashtags.length > 0 ? `
-                        <div class="listing-hashtags">
-                            ${listing.hashtags.slice(0, 3).map(tag => `<span class="hashtag" onclick="event.stopPropagation(); searchByHashtag('${tag}')">${tag}</span>`).join('')}
-                            ${listing.hashtags.length > 3 ? `<span class="hashtag more" onclick="event.stopPropagation(); showAllHashtags('${listingId}', ${JSON.stringify(listing.hashtags).replace(/'/g, "\\'")})">+${listing.hashtags.length - 3}</span>` : ''}
-                        </div>
-                    ` : ''}
-
-                    <div class="listing-contacts">
-                        <div class="contact-item">
-                            <a href="tel:${listing.phone}" class="contact-link" title="Call">
-                                <span class="contact-icon">📞</span>
-                                <span class="contact-text">Call</span>
-                            </a>
-                        </div>
-                        <div class="contact-item">
-                            <a href="${whatsappLink}" target="_blank" class="contact-link whatsapp-link" title="WhatsApp">
-                                <span class="contact-icon">💬</span>
-                                <span class="contact-text">WhatsApp</span>
-                            </a>
-                        </div>
-                    </div>
-
+                    ${listing.phone ? `<div class="listing-location" style="margin-top: 0.5rem;">📞 ${listing.phone}</div>` : ''}
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">${listing.description}</p>
                     ${isOwnerView ? `
-                        <div class="listing-actions">
-                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editListing('${listingId}')">Edit</button>
-                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteListingConfirm('${listingId}')">Delete</button>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" onclick="event.stopPropagation(); editListing(${listing.id})" style="flex: 1;">Edit</button>
+                            <button class="btn" onclick="event.stopPropagation(); deleteListingConfirm(${listing.id})" style="flex: 1; background: var(--error);">Delete</button>
                         </div>
                     ` : ''}
                 </div>
@@ -569,7 +296,7 @@ function displayListings(listings, containerId, isOwnerView = false) {
     // Add click handlers - link to product details page
     container.querySelectorAll('.listing-card').forEach(card => {
         card.addEventListener('click', (e) => {
-            if (!e.target.closest('button') && !e.target.closest('a') && !e.target.closest('.video-play-overlay')) {
+            if (!e.target.closest('button')) {
                 const id = card.dataset.id;
                 if (isOwnerView) {
                     // In owner view, open modal
@@ -692,14 +419,14 @@ document.addEventListener('keydown', (e) => {
 });
 
 function formatPrice(price) {
-    return new Intl.NumberFormat('en-RW').format(price);
+    return new Intl.NumberFormat("en-RW").format(price);
 }
 
 // Listing Detail View (for owner dashboard modal)
-async function viewListingDetail(id, isOwnerView = false) {
-    const listing = await getListingById(id);
+function viewListingDetail(id, isOwnerView = false) {
+    const listing = getListingById(id);
     if (!listing) return;
-
+    
     const modal = document.getElementById('listingModal');
     const content = document.getElementById('listingModalContent');
     
@@ -745,8 +472,8 @@ async function viewListingDetail(id, isOwnerView = false) {
 }
 
 // Load Product Details Page
-async function loadProductDetails(id) {
-    const listing = await getListingById(id);
+function loadProductDetails(id) {
+    const listing = getListingById(id);
     if (!listing) {
         document.getElementById('productDetailsContent').innerHTML = `
             <div class="no-listings">
@@ -755,20 +482,14 @@ async function loadProductDetails(id) {
         `;
         return;
     }
-
-    // Increment views via API
-    try {
-        const token = localStorage.getItem('token');
-        if (token) {
-            await fetch(`${API_BASE}/listings/${id}/view`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-        }
-    } catch (error) {
-        console.error('Error incrementing views:', error);
+    
+    // Increment views
+    listing.views = (listing.views || 0) + 1;
+    const listings = getListings();
+    const index = listings.findIndex(l => l.id === listing.id);
+    if (index !== -1) {
+        listings[index] = listing;
+        localStorage.setItem('listings', JSON.stringify(listings));
     }
     
     const allMedia = [...(listing.images || []), ...(listing.videos || [])];
@@ -1067,13 +788,13 @@ function initListingForm() {
     }
 }
 
-async function openListingForm(listingId = null) {
+function openListingForm(listingId = null) {
     const modal = document.getElementById('listingFormModal');
     const form = document.getElementById('listingForm');
     const title = document.getElementById('listingFormTitle');
-
+    
     if (listingId) {
-        const listing = await getListingById(String(listingId));
+        const listing = getListingById(listingId);
         if (listing) {
             document.getElementById('listingTitle').value = listing.title;
             document.getElementById('listingCategory').value = listing.category;
@@ -1082,25 +803,22 @@ async function openListingForm(listingId = null) {
             document.getElementById('listingPhone').value = listing.phone || '';
             document.getElementById('listingDescription').value = listing.description;
             document.getElementById('listingAvailability').value = listing.availability;
-
+            
             if (window.clearUploadedImages) window.clearUploadedImages();
             if (window.clearUploadedVideos) window.clearUploadedVideos();
             if (listing.images && listing.images.length > 0) {
                 // For demo, we'll just show the images but not allow editing
                 // In production, you'd handle image editing differently
             }
-
+            
             form.dataset.listingId = listingId;
             if (title) title.textContent = 'Edit Listing';
         }
     } else {
         form.reset();
-        if (window.clearUploadedImages) window.clearUploadedImages();
-        if (window.clearUploadedVideos) window.clearUploadedVideos();
-        form.dataset.listingId = '';
-        if (title) title.textContent = 'Create New Listing';
+        form.dataset.listingId = "";
     }
-
+    
     if (modal) modal.style.display = 'block';
     initImageUpload();
     initVideoUpload();
@@ -1118,19 +836,20 @@ function closeListingForm() {
     if (window.clearUploadedVideos) window.clearUploadedVideos();
 }
 
-async function saveListingFromForm() {
+function saveListingFromForm() {
     const form = document.getElementById('listingForm');
     const listingId = form.dataset.listingId;
-
+    
     const images = window.getUploadedImages ? window.getUploadedImages() : [];
     const videos = window.getUploadedVideos ? window.getUploadedVideos() : [];
-
+    
     // For demo, use placeholder if no images uploaded
     if (images.length === 0) {
         images.push('https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800');
     }
-
+    
     const listing = {
+        id: listingId ? parseInt(listingId) : null,
         title: document.getElementById('listingTitle').value,
         category: document.getElementById('listingCategory').value,
         price: parseInt(document.getElementById('listingPrice').value),
@@ -1142,146 +861,63 @@ async function saveListingFromForm() {
         videos: videos,
         verified: false
     };
-
-    // Preserve existing data if editing
+    
+    // Preserve existing ownerId and views if editing
     if (listingId) {
-        const existing = await getListingById(String(listingId));
+        const existing = getListingById(parseInt(listingId));
         if (existing) {
-            listing.id = existing._id != null ? existing._id : existing.id;
+            listing.ownerId = existing.ownerId;
+            listing.views = existing.views || 0;
+            listing.createdAt = existing.createdAt;
         }
     }
-
-    try {
-        await saveListing(listing);
-        closeListingForm();
-        await loadDashboardListings();
-        showNotification('Listing saved successfully!');
-    } catch (error) {
-        showNotification('Error saving listing: ' + error.message);
-    }
+    
+    saveListing(listing);
+    closeListingForm();
+    loadDashboardListings();
+    showNotification('Listing saved successfully!');
 }
 
 function editListing(id) {
     openListingForm(id);
 }
 
-async function deleteListingConfirm(id) {
+function deleteListingConfirm(id) {
     if (confirm('Are you sure you want to delete this listing?')) {
-        try {
-            await deleteListing(id);
-            await loadDashboardListings();
-            showNotification('Listing deleted successfully!');
-        } catch (error) {
-            showNotification('Error deleting listing: ' + error.message);
-        }
+        deleteListing(id);
+        loadDashboardListings();
+        showNotification('Listing deleted successfully!');
     }
 }
 
 // Dashboard
-async function loadDashboardListings() {
+function loadDashboardListings() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     if (!currentUser) return;
-
-    const myListings = await getUserListings();
-
-    // Update owner name
-    const ownerNameEl = document.getElementById('ownerName');
-    if (ownerNameEl) {
-        ownerNameEl.textContent = currentUser.name || 'Owner';
-    }
-
+    
+    const listings = getListings();
+    const myListings = listings.filter(l => l.ownerId === currentUser.id);
+    
+    displayListings(myListings, 'myListingsGrid', true);
+    
     // Update stats
     const totalViews = myListings.reduce((sum, l) => sum + (l.views || 0), 0);
     const verifiedCount = myListings.filter(l => l.verified).length;
-    const totalEarnings = myListings.reduce((sum, l) => sum + (l.price * 0.02), 0); // Assuming 2% commission
-
-    // Update stat elements
+    
     const totalListingsEl = document.getElementById('totalListings');
     const totalViewsEl = document.getElementById('totalViews');
-    const totalMessagesEl = document.getElementById('totalMessages');
-    const totalEarningsEl = document.getElementById('totalEarnings');
-
+    const verifiedListingsEl = document.getElementById('verifiedListings');
+    
     if (totalListingsEl) totalListingsEl.textContent = myListings.length;
-    if (totalViewsEl) totalViewsEl.textContent = totalViews.toLocaleString();
-    if (totalMessagesEl) totalMessagesEl.textContent = Math.floor(Math.random() * 50) + 10; // Mock data for now
-    if (totalEarningsEl) totalEarningsEl.textContent = totalEarnings.toLocaleString() + ' RWF';
-
-    // Load recent listings (last 3)
-    const recentListings = myListings.slice(0, 3);
-    displayListings(recentListings, 'recentListingsGrid', true);
-
-    // Handle empty states
-    const noRecentListings = document.getElementById('noRecentListings');
-    if (noRecentListings) {
-        noRecentListings.style.display = myListings.length === 0 ? 'block' : 'none';
+    if (totalViewsEl) totalViewsEl.textContent = totalViews;
+    if (verifiedListingsEl) verifiedListingsEl.textContent = verifiedCount;
+    
+    const noListings = document.getElementById('noMyListings');
+    if (noListings) {
+        noListings.style.display = myListings.length === 0 ? 'block' : 'none';
     }
-
-    // Load activity feed
-    loadActivityFeed();
-
-    // Initialize performance chart
-    initializePerformanceChart();
 }
 
-async function loadActivityFeed() {
-    const activityFeed = document.getElementById('activityFeed');
-    if (!activityFeed) return;
-
-    const activities = [
-        {
-            icon: 'fas fa-plus-circle',
-            text: 'New listing created: "Modern Apartment"',
-            time: '2 hours ago'
-        },
-        {
-            icon: 'fas fa-eye',
-            text: 'Your listing received 15 new views',
-            time: '4 hours ago'
-        },
-        {
-            icon: 'fas fa-comments',
-            text: 'New inquiry about your Toyota RAV4',
-            time: '1 day ago'
-        },
-        {
-            icon: 'fas fa-star',
-            text: 'Listing verified by PayView team',
-            time: '2 days ago'
-        }
-    ];
-
-    activityFeed.innerHTML = activities.map(activity => `
-        <div class="activity-item">
-            <div class="activity-icon">
-                <i class="${activity.icon}"></i>
-            </div>
-            <div class="activity-content">
-                <p>${activity.text}</p>
-                <span class="activity-time">${activity.time}</span>
-            </div>
-        </div>
-    `).join('');
-}
-
-function initializePerformanceChart() {
-    // Simple mock chart using CSS (could be enhanced with Chart.js later)
-    const chartContainer = document.querySelector('.performance-chart');
-    if (!chartContainer) return;
-
-    const mockData = [12, 19, 15, 25, 22, 30, 28];
-    const maxValue = Math.max(...mockData);
-
-    chartContainer.innerHTML = `
-        <div class="chart-bars">
-            ${mockData.map((value, index) => `
-                <div class="chart-bar">
-                    <div class="bar-fill" style="height: ${(value / maxValue) * 100}%"></div>
-                    <span class="bar-label">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][index]}</span>
-                </div>
-            `).join('')}
-        </div>
-    `;
-}
 
 // Chat
 function openChat(ownerId, listingId) {
@@ -1319,12 +955,22 @@ function initFilters() {
     }
 }
 
-async function loadListingsPage() {
-    let listings = await getListings();
-
+function loadListingsPage() {
+    let listings = getListings();
+    
+    // Filter out sample listings - only show products uploaded by real users
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const userIds = users.map(u => u.id);
+    
+    // Only show listings that belong to registered users
+    listings = listings.filter(l => {
+        // If ownerId exists in users array, it's a real uploaded product
+        return l.ownerId && userIds.includes(l.ownerId);
+    });
+    
     const categoryFilter = document.getElementById('categoryFilter');
     const sortFilter = document.getElementById('sortFilter');
-
+    
     if (categoryFilter && categoryFilter.value !== 'all') {
         listings = listings.filter(l => l.category === categoryFilter.value);
     }
@@ -1353,9 +999,18 @@ async function loadListingsPage() {
 }
 
 // Home Page Featured Listings
-async function loadFeaturedListings() {
-    let listings = await getListings();
-
+function loadFeaturedListings() {
+    let listings = getListings();
+    
+    // Filter out sample listings - only show products uploaded by real users
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const userIds = users.map(u => u.id);
+    
+    // Only show listings that belong to registered users
+    listings = listings.filter(l => {
+        return l.ownerId && userIds.includes(l.ownerId);
+    });
+    
     // Show only first 3
     listings = listings.slice(0, 3);
     displayListings(listings, 'featuredListings');
@@ -1377,114 +1032,46 @@ function initContactForm() {
 function initAuthForms() {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-
-    // Add password visibility toggles
-    const passwordFields = ['loginPassword', 'regPassword', 'regConfirmPassword'];
-    passwordFields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field) {
-            const container = field.parentElement;
-            const toggleBtn = document.createElement('button');
-            toggleBtn.type = 'button';
-            toggleBtn.className = 'password-toggle';
-            toggleBtn.innerHTML = '👁️';
-            toggleBtn.style.cssText = `
-                position: absolute;
-                right: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                background: none;
-                border: none;
-                cursor: pointer;
-                font-size: 18px;
-                color: var(--text-secondary);
-            `;
-
-            container.style.position = 'relative';
-            container.appendChild(toggleBtn);
-
-            toggleBtn.addEventListener('click', () => {
-                const type = field.type === 'password' ? 'text' : 'password';
-                field.type = type;
-                toggleBtn.innerHTML = type === 'password' ? '👁️' : '🙈';
-            });
-        }
-    });
     
     if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
+        loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
+            const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
-            const submitBtn = loginForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn ? submitBtn.textContent : 'Login';
-            if (submitBtn) {
-                submitBtn.textContent = 'Logging in...';
-                submitBtn.disabled = true;
-            }
-            try {
-                const result = await login(email, password);
-                if (result.success) {
-                    showNotification('Login successful! Redirecting...', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'owner-home.html';
-                    }, 500);
-                } else {
-                    showNotification(result.message || 'Login failed', 'error');
-                }
-            } catch (err) {
-                console.error('Login error:', err);
-                showNotification('Login failed. Please try again.', 'error');
-            } finally {
-                if (submitBtn) {
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                }
+            
+            const result = login(email, password);
+            if (result.success) {
+                window.location.href = 'dashboard.html';
+            } else {
+                showNotification(result.message || 'Login failed', 'error');
             }
         });
     }
-
+    
     if (registerForm) {
-        registerForm.addEventListener('submit', async (e) => {
+        registerForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const name = document.getElementById('regName').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const phone = document.getElementById('regPhone').value.trim();
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
-            const terms = document.getElementById('regTerms');
-            if (terms && !terms.checked) {
-                showNotification('You must agree to the terms and conditions', 'error');
-                return;
-            }
+            
             if (password !== confirmPassword) {
                 showNotification('Passwords do not match', 'error');
                 return;
             }
-            const submitBtn = registerForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn ? submitBtn.textContent : 'Register';
-            if (submitBtn) {
-                submitBtn.textContent = 'Registering...';
-                submitBtn.disabled = true;
-            }
-            try {
-                const result = await register({ name, email, phone, password });
-                if (result.success) {
-                    showNotification('Registration successful! Redirecting...', 'success');
-                    setTimeout(() => {
-                        window.location.href = 'owner-home.html';
-                    }, 500);
-                } else {
-                    showNotification(result.message || 'Registration failed', 'error');
-                }
-            } catch (err) {
-                console.error('Registration error:', err);
-                showNotification('Registration failed. Please try again.', 'error');
-            } finally {
-                if (submitBtn) {
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
-                }
+            
+            const userData = {
+                name: document.getElementById('regName').value,
+                email: document.getElementById('regEmail').value,
+                phone: document.getElementById('regPhone').value,
+                password: password,
+                confirmPassword: confirmPassword
+            };
+            
+            const result = register(userData);
+            if (result.success) {
+                window.location.href = 'dashboard.html';
+            } else {
+                showNotification(result.message || 'Registration failed', 'error');
             }
         });
     }
@@ -1493,352 +1080,12 @@ function initAuthForms() {
 // Logout
 function initLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
-    const footerLogout = document.getElementById('footerLogout');
-    
-    const handleLogout = (e) => {
-        e.preventDefault();
-        logout();
-    };
-    
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', handleLogout);
-    }
-    
-    if (footerLogout) {
-        footerLogout.addEventListener('click', handleLogout);
-    }
-}
-
-// Upload Page Functions
-function initUploadForm() {
-    const form = document.getElementById('uploadListingForm');
-    if (!form) return;
-
-    let currentStep = 1;
-    let uploadedImages = [];
-    let uploadedVideos = [];
-    let selectedImageFiles = [];
-    let selectedVideoFiles = [];
-
-    // Initialize step navigation
-    initStepNavigation();
-
-    // Initialize media uploads
-    initMediaUploads();
-
-    // Initialize preview updates
-    initPreviewUpdates();
-
-    function initStepNavigation() {
-        // Next step buttons
-        document.querySelectorAll('.next-step').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (validateCurrentStep()) {
-                    goToStep(currentStep + 1);
-                }
-            });
-        });
-
-        // Previous step buttons
-        document.querySelectorAll('.prev-step').forEach(btn => {
-            btn.addEventListener('click', () => {
-                goToStep(currentStep - 1);
-            });
+        logoutBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
         });
     }
-
-    function goToStep(step) {
-        // Hide current step
-        document.querySelector(`.form-step[data-step="${currentStep}"]`).classList.remove('active');
-
-        // Update step indicators
-        document.querySelector(`.step[data-step="${currentStep}"]`).classList.remove('active');
-        document.querySelector(`.step[data-step="${step}"]`).classList.add('active');
-
-        // Show new step
-        document.querySelector(`.form-step[data-step="${step}"]`).classList.add('active');
-
-        // Update progress bar
-        const progressFill = document.querySelector('.progress-fill');
-        progressFill.style.width = `${(step / 3) * 100}%`;
-
-        currentStep = step;
-
-        // Update preview if on step 3
-        if (step === 3) {
-            updatePreview();
-        }
-    }
-
-    function validateCurrentStep() {
-        const currentStepEl = document.querySelector(`.form-step[data-step="${currentStep}"]`);
-        const requiredFields = currentStepEl.querySelectorAll('[required]');
-
-        for (let field of requiredFields) {
-            if (!field.value.trim()) {
-                showNotification(`Please fill in all required fields`, 'error');
-                field.focus();
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    function initMediaUploads() {
-        // Image upload zone
-        const imageZone = document.getElementById('imageUploadZone');
-        const imageInput = document.getElementById('listingImages');
-
-        if (imageZone && imageInput) {
-            imageZone.addEventListener('click', () => imageInput.click());
-
-            imageInput.addEventListener('change', (e) => {
-                handleImageUpload(e.target.files);
-            });
-
-            // Drag and drop
-            imageZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                imageZone.style.borderColor = 'var(--neon-cyan)';
-            });
-
-            imageZone.addEventListener('dragleave', () => {
-                imageZone.style.borderColor = 'var(--border-color)';
-            });
-
-            imageZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                imageZone.style.borderColor = 'var(--border-color)';
-                handleImageUpload(e.dataTransfer.files);
-            });
-        }
-
-        // Video upload zone
-        const videoZone = document.getElementById('videoUploadZone');
-        const videoInput = document.getElementById('listingVideos');
-
-        if (videoZone && videoInput) {
-            videoZone.addEventListener('click', () => videoInput.click());
-
-            videoInput.addEventListener('change', (e) => {
-                handleVideoUpload(e.target.files);
-            });
-        }
-    }
-
-    // FIXED: append to list and use correct data-index for remove (index in selectedImageFiles)
-    function handleImageUpload(files) {
-        const uploadedImagesEl = document.getElementById('uploadedImages');
-        if (!uploadedImagesEl) return;
-        const maxTotal = 10;
-        const remaining = maxTotal - selectedImageFiles.length;
-        if (remaining <= 0) return;
-        const toAdd = Array.from(files).filter(f => f.type.startsWith('image/')).slice(0, remaining);
-        toAdd.forEach((file) => {
-            const idx = selectedImageFiles.length;
-            selectedImageFiles.push(file);
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const imgItem = document.createElement('div');
-                imgItem.className = 'media-item';
-                imgItem.innerHTML = `
-                    <img src="${e.target.result}" alt="Upload">
-                    <button type="button" class="remove-media" data-index="${idx}">×</button>
-                `;
-                uploadedImagesEl.appendChild(imgItem);
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-
-    // FIXED: append to list and use correct data-index for remove (index in selectedVideoFiles)
-    function handleVideoUpload(files) {
-        const uploadedVideosEl = document.getElementById('uploadedVideos');
-        if (!uploadedVideosEl) return;
-        const maxTotal = 2;
-        const remaining = maxTotal - selectedVideoFiles.length;
-        if (remaining <= 0) return;
-        const toAdd = Array.from(files).filter(f => f.type.startsWith('video/')).slice(0, remaining);
-        toAdd.forEach((file) => {
-            const idx = selectedVideoFiles.length;
-            selectedVideoFiles.push(file);
-            const videoItem = document.createElement('div');
-            videoItem.className = 'media-item';
-            videoItem.innerHTML = `
-                <video width="100" height="60" controls>
-                    <source src="${URL.createObjectURL(file)}" type="${file.type}">
-                </video>
-                <button type="button" class="remove-media" data-index="${idx}">×</button>
-            `;
-            uploadedVideosEl.appendChild(videoItem);
-        });
-    }
-
-    function initPreviewUpdates() {
-        // Update preview in real-time as user types
-        const inputs = ['listingTitle', 'listingPrice', 'listingLocation', 'listingDescription'];
-        inputs.forEach(id => {
-            const element = document.getElementById(id);
-            if (element) {
-                element.addEventListener('input', updatePreview);
-            }
-        });
-    }
-
-    function updatePreview() {
-        const title = document.getElementById('listingTitle').value || 'Title will appear here';
-        const price = document.getElementById('listingPrice').value || '0';
-        const location = document.getElementById('listingLocation').value || 'Location will appear here';
-        const description = document.getElementById('listingDescription').value || 'Description will appear here';
-
-        document.getElementById('previewTitle').textContent = title;
-        document.getElementById('previewPrice').textContent = price ? `${parseInt(price).toLocaleString()} RWF` : 'Price will appear here';
-        document.getElementById('previewLocation').textContent = location;
-        document.getElementById('previewDescription').textContent = description;
-    }
-
-    // Handle form submission
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const publishBtn = document.getElementById('publishBtn');
-        const originalText = publishBtn.innerHTML;
-        publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
-        publishBtn.disabled = true;
-
-        try {
-            // Convert images to base64
-            uploadedImages = [];
-            for (let file of selectedImageFiles) {
-                const base64 = await fileToBase64(file);
-                uploadedImages.push(base64);
-            }
-
-            // Convert videos to base64
-            uploadedVideos = [];
-            for (let file of selectedVideoFiles) {
-                const base64 = await fileToBase64(file);
-                uploadedVideos.push(base64);
-            }
-
-            const listingData = {
-                title: document.getElementById('listingTitle').value,
-                category: document.getElementById('listingCategory').value,
-                price: parseInt(document.getElementById('listingPrice').value),
-                location: document.getElementById('listingLocation').value,
-                phone: document.getElementById('listingPhone').value,
-                description: document.getElementById('listingDescription').value,
-                availability: document.getElementById('listingAvailability').value,
-                images: uploadedImages,
-                videos: uploadedVideos,
-                verified: false
-            };
-
-            // FIXED: saveListing returns the listing object (or throws), not { success }
-            const result = await saveListing(listingData);
-
-            if (result) {
-                showNotification('Listing published successfully!', 'success');
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 2000);
-            } else {
-                showNotification('Failed to publish listing', 'error');
-            }
-        } catch (error) {
-            console.error('Upload error:', error);
-            showNotification('Failed to publish listing. Please try again.', 'error');
-        } finally {
-            publishBtn.innerHTML = originalText;
-            publishBtn.disabled = false;
-        }
-    });
-
-    // FIXED: Remove media items by index; re-render preview so indices stay in sync
-    document.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-media')) {
-            const index = parseInt(e.target.dataset.index, 10);
-            const isVideo = e.target.closest('#uploadedVideos') !== null;
-            if (isVideo) {
-                selectedVideoFiles.splice(index, 1);
-                const uploadedVideosEl = document.getElementById('uploadedVideos');
-                if (uploadedVideosEl) {
-                    uploadedVideosEl.innerHTML = '';
-                    selectedVideoFiles.forEach((file, i) => {
-                        const videoItem = document.createElement('div');
-                        videoItem.className = 'media-item';
-                        videoItem.innerHTML = `
-                            <video width="100" height="60" controls>
-                                <source src="${URL.createObjectURL(file)}" type="${file.type}">
-                            </video>
-                            <button type="button" class="remove-media" data-index="${i}">×</button>
-                        `;
-                        uploadedVideosEl.appendChild(videoItem);
-                    });
-                }
-            } else {
-                selectedImageFiles.splice(index, 1);
-                const uploadedImagesEl = document.getElementById('uploadedImages');
-                if (uploadedImagesEl) {
-                    uploadedImagesEl.innerHTML = '';
-                    selectedImageFiles.forEach((file, i) => {
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                            const imgItem = document.createElement('div');
-                            imgItem.className = 'media-item';
-                            imgItem.innerHTML = `
-                                <img src="${ev.target.result}" alt="Upload">
-                                <button type="button" class="remove-media" data-index="${i}">×</button>
-                            `;
-                            uploadedImagesEl.appendChild(imgItem);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-                }
-            }
-        }
-    });
-}
-
-    // FIXED: fileToBase64 moved to global scope so upload form submit can use it
-    function fileToBase64(file) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-        });
-    }
-    // Expose fileToBase64 for use inside form submit handler
-    window.fileToBase64 = fileToBase64;
-
-
-// FIXED: global fileToBase64 for upload page (initUploadForm runs only on upload.html)
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
-
-async function loadUserListings() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser) return;
-
-    const userListings = await getUserListings();
-
-    const container = document.getElementById('myListings');
-    if (!container) return;
-
-    if (userListings.length === 0) {
-        container.innerHTML = '<p class="no-listings">No listings yet. Create your first listing above!</p>';
-        return;
-    }
-
-    displayListings(userListings, 'myListings', true);
 }
 
 // Modal Handlers
@@ -1867,147 +1114,6 @@ function initModals() {
         }
     });
     
-}
-
-// Utility function to process hashtags
-function processHashtags(hashtagString) {
-    if (!hashtagString || hashtagString.trim() === '') {
-        return [];
-    }
-
-    // Split by spaces, commas, or newlines, and clean up
-    return hashtagString
-        .split(/[\s,]+/)
-        .map(tag => tag.trim())
-        .filter(tag => tag.length > 0)
-        .map(tag => tag.startsWith('#') ? tag : '#' + tag)
-        .filter((tag, index, arr) => arr.indexOf(tag) === index); // Remove duplicates
-}
-
-// Search functionality
-async function performSearch(query, filters = {}) {
-    try {
-        const params = new URLSearchParams();
-        if (query) params.append('q', query);
-        if (filters.category) params.append('category', filters.category);
-        if (filters.location) params.append('location', filters.location);
-        if (filters.minPrice) params.append('minPrice', filters.minPrice);
-        if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
-        if (filters.hashtags) params.append('hashtags', filters.hashtags);
-
-        const response = await fetch(`/api/listings/search?${params}`);
-        const listings = await response.json();
-
-        if (response.ok) {
-            return listings;
-        } else {
-            throw new Error('Search failed');
-        }
-    } catch (error) {
-        console.error('Search error:', error);
-        return [];
-    }
-}
-
-async function getTrendingHashtags() {
-    try {
-        const response = await fetch('/api/hashtags/trending');
-        const hashtags = await response.json();
-        return response.ok ? hashtags : [];
-    } catch (error) {
-        console.error('Trending hashtags error:', error);
-        return [];
-    }
-}
-
-function initSearch() {
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-
-    if (!searchInput || !searchBtn) return;
-
-    // Search on button click
-    searchBtn.addEventListener('click', () => {
-        performSearchAndDisplay(searchInput.value.trim());
-    });
-
-    // Search on Enter key
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            performSearchAndDisplay(searchInput.value.trim());
-        }
-    });
-
-    // Real-time search with debounce
-    let searchTimeout;
-    searchInput.addEventListener('input', () => {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(() => {
-            const query = searchInput.value.trim();
-            if (query.length >= 2) {
-                performSearchAndDisplay(query);
-            } else if (query.length === 0) {
-                // Reset to all listings if search is cleared
-                loadListingsPage();
-                showNotification('Showing all listings', 'info');
-            }
-        }, 500);
-    });
-}
-
-async function performSearchAndDisplay(query) {
-    if (!query) return;
-
-    showNotification('Searching...', 'info');
-
-    const listings = await performSearch(query);
-
-    if (listings.length > 0) {
-        displayListings(listings, 'listingsContainer', false);
-        showNotification(`Found ${listings.length} listings`, 'success');
-    } else {
-        document.getElementById('listingsContainer').innerHTML = `
-            <div class="no-listings">
-                <i class="fas fa-search"></i>
-                <h3>No listings found</h3>
-                <p>Try different keywords or check your spelling</p>
-            </div>
-        `;
-        showNotification('No listings found', 'info');
-    }
-}
-
-function searchByHashtag(hashtag) {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.value = hashtag;
-        performSearchAndDisplay(hashtag);
-    }
-}
-
-function showAllHashtags(listingId, hashtags) {
-    // Create a modal or tooltip to show all hashtags
-    const modal = document.createElement('div');
-    modal.className = 'hashtags-modal';
-    modal.innerHTML = `
-        <div class="hashtags-modal-content">
-            <div class="hashtags-modal-header">
-                <h3>All Hashtags</h3>
-                <button class="close-modal" onclick="this.closest('.hashtags-modal').remove()">×</button>
-            </div>
-            <div class="hashtags-modal-body">
-                ${hashtags.map(tag => `<span class="hashtag" onclick="searchByHashtag('${tag}')">${tag}</span>`).join('')}
-            </div>
-        </div>
-    `;
-    document.body.appendChild(modal);
-
-    // Close modal when clicking outside
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
 }
 
 // Notification System
@@ -2040,792 +1146,28 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Page-specific load functions
-async function loadOwnerHome() {
-    try {
-        // Load related listings (recent listings from other users)
-        const allListings = await getListings();
-        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-        
-        // Filter out user's own listings and get recent ones
-        const relatedListings = allListings
-            .filter(listing => listing.ownerId !== currentUser.id)
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .slice(0, 6); // Show 6 related listings
-
-        const relatedContainer = document.getElementById('relatedListings');
-        if (relatedContainer) {
-            if (relatedListings.length === 0) {
-                relatedContainer.innerHTML = '<p class="no-listings">No related listings available at the moment.</p>';
-            } else {
-                displayListings(relatedListings, 'relatedListings', false);
-            }
-        }
-
-    } catch (error) {
-        console.error('Error loading owner home:', error);
-        showNotification('Failed to load related listings. Please refresh the page.', 'error');
-    }
-}
-
-async function loadFeaturedListings() {
-    try {
-        const listings = await getListings();
-        // Show first 6 listings as featured
-        const featuredListings = listings.slice(0, 6);
-        displayListings(featuredListings, 'featuredListings', false);
-    } catch (error) {
-        console.error('Error loading featured listings:', error);
-        // Fallback to sample data
-        displayListings(sampleListings.slice(0, 6), 'featuredListings', false);
-    }
-}
-
-async function loadListingsPage() {
-    try {
-        const listings = await getListings();
-        displayListings(listings, 'listingsGrid', false);
-    } catch (error) {
-        console.error('Error loading listings page:', error);
-        // Fallback to sample data
-        displayListings(sampleListings, 'listingsGrid', false);
-    }
-}
-
-// Messaging Functions
-async function sendMessage(messageData) {
-    try {
-        const response = await fetch(`${API_BASE}/messages`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(messageData)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to send message');
-        }
-
-        return { success: true, messageId: data.messageId };
-    } catch (error) {
-        console.error('Send message error:', error);
-        throw error;
-    }
-}
-
-async function getMessages() {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            return [];
-        }
-
-        const response = await fetch(`${API_BASE}/messages`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            console.error('Get messages error:', data.message);
-            return [];
-        }
-
-        return data.messages || [];
-    } catch (error) {
-        console.error('Get messages error:', error);
-        return [];
-    }
-}
-
-async function markMessageAsRead(messageId) {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            throw new Error('Please login to mark messages as read');
-        }
-
-        const response = await fetch(`${API_BASE}/messages/${messageId}/read`, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to mark message as read');
-        }
-
-        return { success: true };
-    } catch (error) {
-        console.error('Mark read error:', error);
-        throw error;
-    }
-}
-
-async function deleteMessage(messageId) {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            throw new Error('Please login to delete messages');
-        }
-
-        const response = await fetch(`${API_BASE}/messages/${messageId}`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to delete message');
-        }
-
-        return { success: true };
-    } catch (error) {
-        console.error('Delete message error:', error);
-        throw error;
-    }
-}
-
-async function replyToMessage(messageId, replyData) {
-    try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            throw new Error('Please login to reply to messages');
-        }
-
-        const response = await fetch(`${API_BASE}/messages/${messageId}/reply`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(replyData)
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.message || 'Failed to send reply');
-        }
-
-        return { success: true };
-    } catch (error) {
-        console.error('Reply message error:', error);
-        throw error;
-    }
-}
-
-// Inbox Page Functions
-async function loadInboxMessages() {
-    try {
-        const messages = await getMessages();
-        const messagesList = document.getElementById('messagesList');
-        const noMessages = document.getElementById('noMessages');
-
-        if (!messagesList) return;
-
-        if (messages.length === 0) {
-            messagesList.innerHTML = '';
-            if (noMessages) noMessages.style.display = 'block';
-            return;
-        }
-
-        if (noMessages) noMessages.style.display = 'none';
-
-        messagesList.innerHTML = messages.map(message => {
-            const date = new Date(message.createdAt).toLocaleDateString();
-            const time = new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-            return `
-                <div class="message-item ${message.isRead ? 'read' : 'unread'}" data-id="${message._id}">
-                    <div class="message-header">
-                        <div class="sender-info">
-                            <div class="sender-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="sender-details">
-                                <h4>${message.senderName}</h4>
-                                <p>${message.senderEmail}</p>
-                            </div>
-                        </div>
-                        <div class="message-meta">
-                            <span class="message-date">${date} ${time}</span>
-                            ${!message.isRead ? '<span class="unread-indicator"></span>' : ''}
-                        </div>
-                    </div>
-                    <div class="message-preview">
-                        <h5>${message.subject}</h5>
-                        <p>${message.message.substring(0, 100)}${message.message.length > 100 ? '...' : ''}</p>
-                        ${message.listingId ? `<p class="listing-reference">Regarding: ${message.listingId.title}</p>` : ''}
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        // Add click handlers
-        messagesList.querySelectorAll('.message-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const messageId = item.dataset.id;
-                viewMessageDetail(messageId);
-            });
-        });
-
-    } catch (error) {
-        console.error('Error loading inbox messages:', error);
-        showNotification('Failed to load messages. Please refresh the page.', 'error');
-    }
-}
-
-async function viewMessageDetail(messageId) {
-    try {
-        const messages = await getMessages();
-        const message = messages.find(m => m._id === messageId);
-
-        if (!message) {
-            showNotification('Message not found', 'error');
-            return;
-        }
-
-        // Mark as read if not already
-        if (!message.isRead) {
-            await markMessageAsRead(messageId);
-            // Update UI
-            const messageItem = document.querySelector(`[data-id="${messageId}"]`);
-            if (messageItem) {
-                messageItem.classList.remove('unread');
-                messageItem.classList.add('read');
-                const indicator = messageItem.querySelector('.unread-indicator');
-                if (indicator) indicator.remove();
-            }
-        }
-
-        // Populate message detail view
-        document.getElementById('messageSubject').textContent = message.subject;
-        document.getElementById('messageDate').textContent = new Date(message.createdAt).toLocaleString();
-        document.getElementById('senderName').textContent = message.senderName;
-        document.getElementById('senderEmail').textContent = message.senderEmail;
-        document.getElementById('senderPhone').textContent = message.senderPhone;
-        document.getElementById('messageContent').textContent = message.message;
-
-        // Show listing info if available
-        const listingInfo = document.getElementById('listingInfo');
-        if (message.listingId) {
-            document.getElementById('listingTitle').textContent = message.listingId.title;
-            document.getElementById('listingPrice').textContent = `RWF ${formatPrice(message.listingId.price)}`;
-            document.getElementById('listingLocation').textContent = message.listingId.location;
-
-            const listingImage = document.getElementById('listingImage');
-            if (message.listingId.images && message.listingId.images.length > 0) {
-                listingImage.src = message.listingId.images[0];
-                listingImage.style.display = 'block';
-            } else {
-                listingImage.style.display = 'none';
-            }
-
-            listingInfo.style.display = 'block';
-        } else {
-            listingInfo.style.display = 'none';
-        }
-
-        // Show message detail view
-        document.getElementById('messagesList').style.display = 'none';
-        document.getElementById('messageDetail').style.display = 'block';
-        document.getElementById('messageDetail').dataset.messageId = messageId;
-
-    } catch (error) {
-        console.error('Error viewing message detail:', error);
-        showNotification('Failed to load message details', 'error');
-    }
-}
-
-function closeMessageDetail() {
-    document.getElementById('messageDetail').style.display = 'none';
-    document.getElementById('messagesList').style.display = 'block';
-}
-
-function openReplyModal() {
-    document.getElementById('replyModal').style.display = 'block';
-}
-
-function closeReplyModal() {
-    document.getElementById('replyModal').style.display = 'none';
-    document.getElementById('replyForm').reset();
-}
-
-// Inbox Event Handlers
-function initInboxHandlers() {
-    // Back to list button
-    const backBtn = document.getElementById('backToList');
-    if (backBtn) {
-        backBtn.addEventListener('click', closeMessageDetail);
-    }
-
-    // Reply button
-    const replyBtn = document.getElementById('replyBtn');
-    if (replyBtn) {
-        replyBtn.addEventListener('click', openReplyModal);
-    }
-
-    // Mark as read button
-    const markReadBtn = document.getElementById('markReadBtn');
-    if (markReadBtn) {
-        markReadBtn.addEventListener('click', async () => {
-            const messageId = document.getElementById('messageDetail').dataset.messageId;
-            if (messageId) {
-                try {
-                    await markMessageAsRead(messageId);
-                    showNotification('Message marked as read', 'success');
-                } catch (error) {
-                    showNotification('Failed to mark message as read', 'error');
-                }
-            }
-        });
-    }
-
-    // Delete message button
-    const deleteBtn = document.getElementById('deleteMessageBtn');
-    if (deleteBtn) {
-        deleteBtn.addEventListener('click', async () => {
-            const messageId = document.getElementById('messageDetail').dataset.messageId;
-            if (messageId && confirm('Are you sure you want to delete this message?')) {
-                try {
-                    await deleteMessage(messageId);
-                    showNotification('Message deleted', 'success');
-                    closeMessageDetail();
-                    loadInboxMessages(); // Reload the list
-                } catch (error) {
-                    showNotification('Failed to delete message', 'error');
-                }
-            }
-        });
-    }
-
-    // Reply form
-    const replyForm = document.getElementById('replyForm');
-    if (replyForm) {
-        replyForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const messageId = document.getElementById('messageDetail').dataset.messageId;
-            const subject = document.getElementById('replySubject').value;
-            const message = document.getElementById('replyMessage').value;
-
-            if (!messageId) return;
-
-            try {
-                await replyToMessage(messageId, { subject, message });
-                showNotification('Reply sent successfully', 'success');
-                closeReplyModal();
-            } catch (error) {
-                showNotification('Failed to send reply', 'error');
-            }
-        });
-    }
-
-    // Modal close handlers
-    const modal = document.getElementById('replyModal');
-    if (modal) {
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeReplyModal();
-            }
-        });
-
-        const closeBtn = modal.querySelector('.modal-close');
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeReplyModal);
-        }
-    }
-}
-
-// Product Details Functions
-async function loadProductDetails(productId) {
-    try {
-        const response = await fetch(`${API_BASE}/listings/${productId}`);
-        const data = await response.json();
-
-        if (!response.ok || !data.listing) {
-            document.getElementById('productDetailsContent').innerHTML = `
-                <div class="no-listings">
-                    <p>Product not found. <a href="listings.html">Browse all listings</a></p>
-                </div>
-            `;
-            return;
-        }
-
-        const listing = data.listing;
-        displayProductDetails(listing);
-
-    } catch (error) {
-        console.error('Error loading product details:', error);
-        document.getElementById('productDetailsContent').innerHTML = `
-            <div class="no-listings">
-                <p>Failed to load product details. <a href="listings.html">Browse all listings</a></p>
-            </div>
-        `;
-    }
-}
-
-function displayProductDetails(listing) {
-    const container = document.getElementById('productDetailsContent');
-
-    // Format price
-    const formattedPrice = formatPrice(listing.price);
-
-    // Handle images
-    const hasImages = listing.images && listing.images.length > 0;
-    const mainImage = hasImages ? listing.images[0] : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800';
-
-    // Handle videos
-    const hasVideos = listing.videos && listing.videos.length > 0;
-
-    // Format WhatsApp link
-    const whatsappNumber = listing.ownerId?.phone ? listing.ownerId.phone.replace(/\D/g, '') : '';
-    const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=Hello, I'm interested in your listing: ${listing.title}` : '#';
-
-    const html = `
-        <div class="product-details-container">
-            <div class="product-gallery">
-                <div class="main-image-container">
-                    ${hasVideos ? `
-                        <video class="product-video" controls>
-                            <source src="${listing.videos[0]}" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    ` : `
-                        <img src="${mainImage}" alt="${listing.title}" class="product-main-image" onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'">
-                    `}
-                </div>
-                ${hasImages && listing.images.length > 1 ? `
-                    <div class="image-thumbnails">
-                        ${listing.images.slice(0, 4).map((image, index) => `
-                            <img src="${image}" alt="Thumbnail ${index + 1}" class="thumbnail" onclick="changeMainImage('${image}')" onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=200'">
-                        `).join('')}
-                    </div>
-                ` : ''}
-            </div>
-
-            <div class="product-info">
-                <div class="product-header">
-                    <h1 class="product-title">${listing.title}</h1>
-                    ${listing.verified ? '<span class="verified-badge">✓ Verified</span>' : ''}
-                </div>
-
-                <div class="product-meta">
-                    <div class="product-price">${formattedPrice} RWF</div>
-                    <div class="product-category">${listing.category.toUpperCase()}</div>
-                    <div class="product-location">📍 ${listing.location}</div>
-                </div>
-
-                <div class="product-description">
-                    <h3>Description</h3>
-                    <p>${listing.description}</p>
-                </div>
-
-                <div class="owner-info">
-                    <h3>Owner Information</h3>
-                    <div class="owner-details">
-                        <div class="owner-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div class="owner-contact">
-                            <p><strong>${listing.ownerId?.name || 'Owner'}</strong></p>
-                            <p>📞 ${listing.ownerId?.phone || 'Phone not available'}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="product-actions">
-                    <button class="btn btn-primary btn-large" onclick="contactOwner('${listing._id}', '${listing.title}', '${listing.ownerId?._id || ''}')">
-                        <i class="fas fa-envelope"></i> Send Message
-                    </button>
-                    <a href="tel:${listing.phone}" class="btn btn-secondary btn-large">
-                        <i class="fas fa-phone"></i> Call
-                    </a>
-                    ${whatsappLink !== '#' ? `
-                        <a href="${whatsappLink}" target="_blank" class="btn btn-success btn-large">
-                            <i class="fab fa-whatsapp"></i> WhatsApp
-                        </a>
-                    ` : ''}
-                </div>
-            </div>
-        </div>
-    `;
-
-    container.innerHTML = html;
-}
-
-function changeMainImage(imageSrc) {
-    const mainImage = document.querySelector('.product-main-image');
-    if (mainImage) {
-        mainImage.src = imageSrc;
-    }
-}
-
-async function contactOwner(listingId, listingTitle, ownerId) {
-    // Create message modal
-    const modal = document.createElement('div');
-    modal.id = 'contactModal';
-    modal.className = 'modal';
-    modal.innerHTML = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Contact Owner</h3>
-                <span class="modal-close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="listing-reference">
-                    <h4>Regarding: ${listingTitle}</h4>
-                </div>
-                <form id="contactForm">
-                    <div class="form-group">
-                        <label for="contactName">Your Name *</label>
-                        <input type="text" id="contactName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="contactEmail">Your Email *</label>
-                        <input type="email" id="contactEmail" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="contactPhone">Your Phone *</label>
-                        <input type="tel" id="contactPhone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="contactSubject">Subject *</label>
-                        <input type="text" id="contactSubject" value="Inquiry about ${listingTitle}" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="contactMessage">Message *</label>
-                        <textarea id="contactMessage" rows="5" placeholder="Hello, I'm interested in this listing. Please provide more details..." required></textarea>
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" onclick="closeContactModal()">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Send Message</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-    modal.style.display = 'block';
-
-    // Form submission
-    const form = document.getElementById('contactForm');
-    form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-
-        const messageData = {
-            senderName: document.getElementById('contactName').value,
-            senderEmail: document.getElementById('contactEmail').value,
-            senderPhone: document.getElementById('contactPhone').value,
-            recipientId: ownerId,
-            listingId: listingId,
-            subject: document.getElementById('contactSubject').value,
-            message: document.getElementById('contactMessage').value
-        };
-
-        try {
-            await sendMessage(messageData);
-            showNotification('Message sent successfully! The owner will contact you soon.', 'success');
-            closeContactModal();
-        } catch (error) {
-            showNotification('Failed to send message. Please try again.', 'error');
-        }
-    });
-
-    // Close modal handlers
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            closeContactModal();
-        }
-    });
-
-    const closeBtn = modal.querySelector('.modal-close');
-    closeBtn.addEventListener('click', closeContactModal);
-}
-
-function closeContactModal() {
-    const modal = document.getElementById('contactModal');
-    if (modal) {
-        modal.remove();
-    }
-}
-
-// Navigation Toggle Functionality
-function initNavigationToggles() {
-    const actionButtons = document.querySelectorAll('.action-btn');
-    
-    actionButtons.forEach(button => {
-        button.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            const sectionName = button.dataset.section;
-            const section = document.getElementById(`${sectionName}Section`);
-            
-            if (!section) return;
-            
-            // Hide all content sections first
-            document.querySelectorAll('.content-section').forEach(sec => {
-                sec.classList.remove('active');
-            });
-            
-            // Remove active class from all action buttons
-            document.querySelectorAll('.action-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Show the clicked section
-            section.classList.add('active');
-            button.classList.add('active');
-            
-            // Scroll to top smoothly
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-            
-            // Load content for the section
-            if (sectionName === 'listings') {
-                loadOwnerListings();
-            }
-        });
-    });
-}
-
-// Profile Dropdown Functionality
-function initProfileDropdown() {
-    const profileBtn = document.getElementById('profileBtn');
-    const profileMenu = document.getElementById('profileMenu');
-    
-    if (profileBtn && profileMenu) {
-        profileBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            profileMenu.classList.toggle('show');
-        });
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!profileBtn.contains(e.target) && !profileMenu.contains(e.target)) {
-                profileMenu.classList.remove('show');
-            }
-        });
-    }
-}
-
-async function loadOwnerListings() {
-    try {
-        const userListings = await getUserListings();
-        const myListingsContainer = document.getElementById('myListings');
-        const noMyListings = document.getElementById('noMyListings');
-
-        if (userListings.length === 0) {
-            if (myListingsContainer) myListingsContainer.innerHTML = '';
-            if (noMyListings) noMyListings.style.display = 'block';
-        } else {
-            if (noMyListings) noMyListings.style.display = 'none';
-            displayListings(userListings, 'myListings', true);
-        }
-
-    } catch (error) {
-        console.error('Error loading owner listings:', error);
-        showNotification('Failed to load your listings. Please refresh the page.', 'error');
-    }
-}
-
-// Contact Form Handler
-function initContactForm() {
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const formData = {
-                name: document.getElementById('contactName').value,
-                email: document.getElementById('contactEmail').value,
-                subject: document.getElementById('contactSubject').value,
-                message: document.getElementById('contactMessage').value
-            };
-            
-            // For now, just show a success message
-            // In a real implementation, you'd send this to a contact endpoint
-            showNotification('Thank you for your message! We\'ll get back to you soon.', 'success');
-            contactForm.reset();
-        });
-    }
-}
-
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     initializeStorage();
     initNavigation();
     initModals();
-
+    
     // Page-specific initializations
     if (window.location.pathname.includes('dashboard.html')) {
         if (checkAuth()) {
-            initLogout();
-            initNavigationToggles();
-            initProfileDropdown();
-            initContactForm();
-            await loadDashboardListings();
+            loadDashboardListings();
             initListingForm();
-        } else {
-            window.location.href = 'login.html';
-        }
-    } else if (window.location.pathname.includes('upload.html')) {
-        if (checkAuth()) {
             initLogout();
-            initNavigationToggles();
-            initProfileDropdown();
-            initContactForm();
-            initUploadForm();
-            await loadUserListings();
-        } else {
-            window.location.href = 'login.html';
-        }
-    } else if (window.location.pathname.includes('owner-home.html')) {
-        if (checkAuth()) {
-            initLogout();
-            initNavigationToggles();
-            initProfileDropdown();
-            initContactForm();
-            await loadOwnerHome();
-        } else {
-            window.location.href = 'login.html';
         }
     } else if (window.location.pathname.includes('listings.html')) {
-        await loadListingsPage();
+        loadListingsPage();
         initFilters();
-        initSearch();
     } else if (window.location.pathname.includes('index.html') || window.location.pathname === '/' || window.location.pathname.endsWith('/bebe/') || window.location.pathname.endsWith('/bebe')) {
-        await loadFeaturedListings();
+        loadFeaturedListings();
     } else if (window.location.pathname.includes('contact.html')) {
         initContactForm();
     } else if (window.location.pathname.includes('login.html') || window.location.pathname.includes('register.html')) {
         initAuthForms();
-    } else if (window.location.pathname.includes('inbox.html')) {
-        if (checkAuth()) {
-            initLogout();
-            initNavigationToggles();
-            initProfileDropdown();
-            initContactForm();
-            loadInboxMessages();
-            initInboxHandlers();
-        } else {
-            window.location.href = 'login.html';
-        }
-    } else if (window.location.pathname.includes('product.html')) {
-        // Product details page - no auth required for viewing
-        initNavigation();
     }
 });
 
@@ -2854,4 +1196,3 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-
