@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Ad - PayView Marketplace</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1>PayView<span class="neon">Marketplace</span></h1>
+            </div>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="listings.html">My Listings</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="contact.html">Contact</a></li>
+                <li><a href="#" id="logoutBtn" class="btn btn-secondary">Logout</a></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Upload Section -->
+    <section class="upload-section">
+        <div class="container">
+            <div class="upload-container">
+                <div class="upload-card">
+                    <h2>Create New Listing</h2>
+                    <p class="upload-subtitle">Upload your product or property to reach more customers</p>
+                    
+                    <form id="uploadListingForm" class="upload-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="listingTitle">Title</label>
+                                <input type="text" id="listingTitle" name="title" placeholder="e.g., Modern 3-Bedroom House" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="listingCategory">Category</label>
+                                <select id="listingCategory" name="category" required>
+                                    <option value="">Select a category</option>
+                                    <option value="house">House</option>
+                                    <option value="apartment">Apartment</option>
+                                    <option value="land">Land</option>
+                                    <option value="car">Car</option>
+                                    <option value="motorcycle">Motorcycle</option>
+                                    <option value="business">Business</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="listingPrice">Price (RWF)</label>
+                                <input type="number" id="listingPrice" name="price" placeholder="1000000" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="listingLocation">Location</label>
+                                <input type="text" id="listingLocation" name="location" placeholder="e.g., Kigali, Nyarugenge" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="listingDescription">Description</label>
+                            <textarea id="listingDescription" name="description" rows="5" placeholder="Describe your listing in detail..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="listingImages">Upload Images</label>
+                            <input type="file" id="listingImages" name="images" accept="image/*" multiple>
+                            <small>You can upload multiple images (JPG, PNG, GIF). Optional if uploading videos.</small>
+                            <div id="imagePreview" class="image-preview"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="listingVideo">Upload Videos (Optional)</label>
+                            <input type="file" id="listingVideo" name="videos" accept="video/mp4" multiple>
+                            <small>Upload one or more MP4 videos to showcase your product. Optional if uploading images.</small>
+                            <div id="videoPreview" class="video-preview"></div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="listingContact">Contact Phone</label>
+                                <input type="tel" id="listingContact" name="contact" placeholder="+250 7XX XXX XXX" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="listingWhatsapp">WhatsApp Number</label>
+                                <input type="tel" id="listingWhatsapp" name="whatsapp" placeholder="+250 7XX XXX XXX" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="listingVerify" name="verify" required>
+                                <span>I confirm this information is accurate and complete</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">Create Listing</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- My Listings Section -->
+    <section class="my-listings-section">
+        <div class="container">
+            <h2>Your Listings</h2>
+            <div id="myListings" class="listings-grid">
+                <p class="no-listings">No listings yet. Create your first listing above!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>PayView Marketplace</h3>
+                    <p>Connecting buyers and sellers across Rwanda and beyond.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="listings.html">Listings</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>For Owners</h4>
+                    <ul>
+                        <li><a href="upload.html">Upload Ad</a></li>
+                        <li><a href="#" id="footerLogout">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 PayView Marketplace. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

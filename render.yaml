@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: payview-marketplace
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    routes:
+      - path: /
+        destination: /index.html

@@ -263,15 +263,32 @@ function displayListings(listings, containerId, isOwnerView = false) {
         return;
     }
     
+    // Set proper grid layout for 3 columns
+    container.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+    container.style.gap = '2rem';
+    
     container.innerHTML = listings.map(listing => {
+        // Use first uploaded image, fallback to placeholder
         const imageUrl = listing.images && listing.images.length > 0 
             ? listing.images[0] 
             : 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800';
         
+        // Check if there are videos
+        const hasVideos = listing.videos && listing.videos.length > 0;
+        
+        // Format WhatsApp link
+        const whatsappNumber = listing.whatsapp ? listing.whatsapp.replace(/\D/g, '') : '';
+        const whatsappLink = whatsappNumber ? `https://wa.me/${whatsappNumber}?text=Hello, I'm interested in your listing: ${listing.title}` : '#';
+        
         return `
-            <div class="listing-card" data-id="${listing.id}">
-                <img src="${imageUrl}" alt="${listing.title}" class="listing-image" 
-                     onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'">
+            <div class="listing-card instagram-style" data-id="${listing.id}">
+                <div class="listing-image-container">
+                    ${hasVideos ? `
+                        <div class="listing-video-badge">🎥 Video</div>
+                    ` : ''}
+                    <img src="${imageUrl}" alt="${listing.title}" class="listing-image" 
+                         onerror="this.src='https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'">
+                </div>
                 <div class="listing-content">
                     <div class="listing-header">
                         <h3 class="listing-title">${listing.title}</h3>
@@ -280,12 +297,27 @@ function displayListings(listings, containerId, isOwnerView = false) {
                     <div class="listing-category">${listing.category.toUpperCase()}</div>
                     <div class="listing-location">📍 ${listing.location}</div>
                     <div class="listing-price">${formatPrice(listing.price)} RWF</div>
-                    ${listing.phone ? `<div class="listing-location" style="margin-top: 0.5rem;">📞 ${listing.phone}</div>` : ''}
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">${listing.description}</p>
+                    <p class="listing-description">${listing.description.substring(0, 100)}${listing.description.length > 100 ? '...' : ''}</p>
+                    
+                    <div class="listing-contacts">
+                        <div class="contact-item">
+                            <a href="tel:${listing.phone}" class="contact-link" title="Call">
+                                <span class="contact-icon">📞</span>
+                                <span class="contact-text">Call</span>
+                            </a>
+                        </div>
+                        <div class="contact-item">
+                            <a href="${whatsappLink}" target="_blank" class="contact-link whatsapp-link" title="WhatsApp">
+                                <span class="contact-icon">💬</span>
+                                <span class="contact-text">WhatsApp</span>
+                            </a>
+                        </div>
+                    </div>
+                    
                     ${isOwnerView ? `
-                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-                            <button class="btn btn-secondary" onclick="event.stopPropagation(); editListing(${listing.id})" style="flex: 1;">Edit</button>
-                            <button class="btn" onclick="event.stopPropagation(); deleteListingConfirm(${listing.id})" style="flex: 1; background: var(--error);">Delete</button>
+                        <div class="listing-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); editListing(${listing.id})">Edit</button>
+                            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteListingConfirm(${listing.id})">Delete</button>
                         </div>
                     ` : ''}
                 </div>
@@ -296,7 +328,7 @@ function displayListings(listings, containerId, isOwnerView = false) {
     // Add click handlers - link to product details page
     container.querySelectorAll('.listing-card').forEach(card => {
         card.addEventListener('click', (e) => {
-            if (!e.target.closest('button')) {
+            if (!e.target.closest('button') && !e.target.closest('a')) {
                 const id = card.dataset.id;
                 if (isOwnerView) {
                     // In owner view, open modal
@@ -813,7 +845,6 @@ function loadDashboardListings() {
     }
 }
 
-
 // Chat
 function openChat(ownerId, listingId) {
     const modal = document.getElementById('chatModal');
@@ -936,35 +967,38 @@ function initAuthForms() {
             
             const result = login(email, password);
             if (result.success) {
-                window.location.href = 'dashboard.html';
+                showNotification('Login successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'upload.html';
+                }, 500);
             } else {
                 showNotification(result.message || 'Login failed', 'error');
             }
         });
     }
-    
+
     if (registerForm) {
         registerForm.addEventListener('submit', (e) => {
             e.preventDefault();
+            
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const phone = document.getElementById('regPhone').value;
             const password = document.getElementById('regPassword').value;
             const confirmPassword = document.getElementById('regConfirmPassword').value;
+            const terms = document.getElementById('regTerms').checked;
             
-            if (password !== confirmPassword) {
-                showNotification('Passwords do not match', 'error');
+            if (!terms) {
+                showNotification('You must agree to the terms and conditions', 'error');
                 return;
             }
             
-            const userData = {
-                name: document.getElementById('regName').value,
-                email: document.getElementById('regEmail').value,
-                phone: document.getElementById('regPhone').value,
-                password: password,
-                confirmPassword: confirmPassword
-            };
-            
-            const result = register(userData);
+            const result = register({ name, email, phone, password, confirmPassword });
             if (result.success) {
-                window.location.href = 'dashboard.html';
+                showNotification('Registration successful! Redirecting to upload page...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'upload.html';
+                }, 500);
             } else {
                 showNotification(result.message || 'Registration failed', 'error');
             }
@@ -975,12 +1009,173 @@ function initAuthForms() {
 // Logout
 function initLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
+    const footerLogout = document.getElementById('footerLogout');
+    
+    const handleLogout = (e) => {
+        e.preventDefault();
+        logout();
+    };
+    
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            logout();
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    
+    if (footerLogout) {
+        footerLogout.addEventListener('click', handleLogout);
+    }
+}
+
+// Upload Page Functions
+function initUploadForm() {
+    const form = document.getElementById('uploadListingForm');
+    if (!form) return;
+    
+    let uploadedImages = [];
+    let uploadedVideos = [];
+    
+    // Handle multiple image preview and storage
+    const imageInput = document.getElementById('listingImages');
+    if (imageInput) {
+        imageInput.addEventListener('change', (e) => {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+            uploadedImages = [];
+            
+            if (e.target.files.length === 0) {
+                return;
+            }
+            
+            Array.from(e.target.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    uploadedImages.push(event.target.result);
+                    
+                    const imgContainer = document.createElement('div');
+                    imgContainer.className = 'image-preview-item';
+                    imgContainer.innerHTML = `
+                        <img src="${event.target.result}" alt="preview ${index + 1}">
+                        <button type="button" class="remove-btn" data-index="${index}" title="Remove this image">✕</button>
+                    `;
+                    preview.appendChild(imgContainer);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Add remove button listeners
+            setTimeout(() => {
+                document.querySelectorAll('.image-preview-item .remove-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const index = Array.from(btn.parentElement.parentElement.children).indexOf(btn.parentElement);
+                        uploadedImages.splice(index, 1);
+                        btn.parentElement.remove();
+                    });
+                });
+            }, 100);
         });
     }
+    
+    // Handle multiple video preview and storage
+    const videoInput = document.getElementById('listingVideo');
+    if (videoInput) {
+        videoInput.addEventListener('change', (e) => {
+            const preview = document.getElementById('videoPreview');
+            preview.innerHTML = '';
+            uploadedVideos = [];
+            
+            if (e.target.files.length === 0) {
+                return;
+            }
+            
+            Array.from(e.target.files).forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    uploadedVideos.push(event.target.result);
+                    
+                    const videoContainer = document.createElement('div');
+                    videoContainer.className = 'video-preview-item';
+                    videoContainer.innerHTML = `
+                        <div style="position: relative;">
+                            <video width="150" height="150" controls style="border-radius: 8px;">
+                                <source src="${event.target.result}" type="video/mp4">
+                            </video>
+                            <button type="button" class="remove-btn" data-index="${index}" title="Remove this video" style="position: absolute; top: 5px; right: 5px;">✕</button>
+                        </div>
+                        <p style="color: var(--text-secondary); margin-top: 8px; font-size: 0.9rem;">Video ${index + 1}</p>
+                    `;
+                    preview.appendChild(videoContainer);
+                };
+                reader.readAsDataURL(file);
+            });
+            
+            // Add remove button listeners
+            setTimeout(() => {
+                document.querySelectorAll('.video-preview-item .remove-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const index = Array.from(btn.closest('.video-preview').children).indexOf(btn.closest('.video-preview-item'));
+                        uploadedVideos.splice(index, 1);
+                        btn.closest('.video-preview-item').remove();
+                    });
+                });
+            }, 100);
+        });
+    }
+    
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // Validate that at least one image or video is uploaded
+        if (uploadedImages.length === 0 && uploadedVideos.length === 0) {
+            showNotification('Please upload at least one image or video', 'error');
+            return;
+        }
+        
+        const listing = {
+            id: null,
+            title: document.getElementById('listingTitle').value,
+            category: document.getElementById('listingCategory').value,
+            price: parseInt(document.getElementById('listingPrice').value),
+            location: document.getElementById('listingLocation').value,
+            phone: document.getElementById('listingContact').value,
+            whatsapp: document.getElementById('listingWhatsapp').value,
+            description: document.getElementById('listingDescription').value,
+            images: uploadedImages.length > 0 ? uploadedImages : [],
+            videos: uploadedVideos.length > 0 ? uploadedVideos : [],
+            verified: document.getElementById('listingVerify').checked
+        };
+        
+        const result = saveListing(listing);
+        if (result) {
+            showNotification('Listing created successfully!', 'success');
+            form.reset();
+            uploadedImages = [];
+            uploadedVideos = [];
+            document.getElementById('imagePreview').innerHTML = '';
+            document.getElementById('videoPreview').innerHTML = '';
+            setTimeout(() => {
+                loadUserListings();
+            }, 500);
+        }
+    });
+}
+
+function loadUserListings() {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser) return;
+    
+    const listings = getListings();
+    const userListings = listings.filter(l => l.ownerId === currentUser.id);
+    
+    const container = document.getElementById('myListings');
+    if (!container) return;
+    
+    if (userListings.length === 0) {
+        container.innerHTML = '<p class="no-listings">No listings yet. Create your first listing above!</p>';
+        return;
+    }
+    
+    displayListings(userListings, 'myListings', true);
 }
 
 // Modal Handlers
@@ -1053,6 +1248,14 @@ document.addEventListener('DOMContentLoaded', () => {
             loadDashboardListings();
             initListingForm();
             initLogout();
+        }
+    } else if (window.location.pathname.includes('upload.html')) {
+        if (checkAuth()) {
+            initLogout();
+            initUploadForm();
+            loadUserListings();
+        } else {
+            window.location.href = 'login.html';
         }
     } else if (window.location.pathname.includes('listings.html')) {
         loadListingsPage();
