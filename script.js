@@ -1032,21 +1032,24 @@ function initContactForm() {
 function initAuthForms() {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
-    
-    if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            const result = login(email, password);
-            if (result.success) {
-                window.location.href = 'dashboard.html';
-            } else {
-                showNotification(result.message || 'Login failed', 'error');
-            }
-        });
-    }
+
+ loginForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  const result = await login(email, password);
+
+  if (result.success) {
+    localStorage.setItem('token', result.token);
+    window.location.href = 'dashboard.html';
+  } else {
+    alert(result.message);
+  }
+});
+
+
     
     if (registerForm) {
         registerForm.addEventListener('submit', (e) => {
