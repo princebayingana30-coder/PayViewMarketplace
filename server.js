@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
+const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const multer = require("multer");
@@ -59,6 +60,8 @@ app.use(cors({
     "https://payviewmarketplace.netlify.app",
     "http://localhost:3000",
     "http://localhost:5000",
+    "http://127.0.0.1:5504",
+    "http://localhost:5504",
     process.env.FRONTEND_URL || "*"
   ],
   credentials: true
@@ -66,6 +69,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(fileupload({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   useTempFiles: true,
@@ -77,8 +81,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/payview-m
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log('✅ MongoDB connected'))
-.catch(err => console.error('❌ MongoDB connection error:', err));
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch(err => console.error('❌ MongoDB connection error:', err));
 
 // Authentication middleware
 const authenticateToken = (req, res, next) => {
@@ -375,11 +379,37 @@ app.post('/api/listings/:id/view', authenticateToken, async (req, res) => {
   }
 });
 
-// File upload endpoint (currently using base64 encoding)
-app.post('/api/upload', authenticateToken, (req, res) => {
-  // Images are currently stored as base64 strings in the database
-  // Future enhancement: Implement cloud storage (AWS S3, Cloudinary, etc.)
-  res.json({ message: 'File upload endpoint - images stored as base64 in database' });
+// File upload endpoint
+app.post('/api/upload', authenticateToken, async (req, res) => {
+  try {
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).json({ message: 'No files were uploaded.' });
+    }
+
+    const uploadedFiles = [];
+    const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
+
+    for (const file of files) {
+      // Generate unique filename
+      const fileName = `${Date.now()}-${file.name.replace(/\s/g, '-')}`;
+      const uploadPath = path.join(__dirname, 'uploads', fileName);
+
+      // Move file to uploads directory
+      await file.mv(uploadPath);
+
+      // Return the URL to access the file
+      // Assuming server serves static files from root, access via /uploads/filename
+      uploadedFiles.push(`/uploads/${fileName}`);
+    }
+
+    res.json({
+      message: 'File upload successful',
+      urls: uploadedFiles
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ message: 'Server error during file upload' });
+  }
 });
 
 // Messaging Routes
@@ -553,6 +583,58 @@ app.get('/api/hashtags/trending', async (req, res) => {
   } catch (error) {
     console.error('Trending hashtags error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Video Streaming Endpoint
+app.get('/api/stream/:filename', (req, res) => {
+  const fileName = req.params.filename;
+  const filePath = path.join(__dirname, 'uploads', fileName);
+
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ message: 'Video not found' });
+  }
+
+  const stat = fs.statSync(filePath);
+  const fileSize = stat.size;
+  const range = req.headers.range;
+
+  if (range) {
+    // Parse Range header
+    const parts = range.replace(/bytes=/, "").split("-");
+    const start = parseInt(parts[0], 10);
+    const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+    const chunksize = (end - start) + 1;
+
+    // Create read stream for the specific chunk
+    const file = fs.createReadStream(filePath, { start, end });
+
+    // Set 206 Partial Content headers
+    const head = {
+      'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+      'Accept-Ranges': 'bytes',
+      'Content-Length': chunksize,
+      'Content-Type': 'video/mp4', // Defaulting to mp4, could be dynamic based on extension
+    };
+
+    // Basic strict mime type check if needed, but for now simple works
+    if (fileName.endsWith('.webm')) head['Content-Type'] = 'video/webm';
+    if (fileName.endsWith('.ogg')) head['Content-Type'] = 'video/ogg';
+
+    res.writeHead(206, head);
+    file.pipe(res);
+  } else {
+    // No range header, serve full file
+    const head = {
+      'Content-Length': fileSize,
+      'Content-Type': 'video/mp4',
+    };
+    if (fileName.endsWith('.webm')) head['Content-Type'] = 'video/webm';
+    if (fileName.endsWith('.ogg')) head['Content-Type'] = 'video/ogg';
+
+    res.writeHead(200, head);
+    fs.createReadStream(filePath).pipe(res);
   }
 });
 

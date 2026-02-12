@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PayView Marketplace - Connect Buyers & Sellers</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar">
@@ -88,6 +91,24 @@
         </div>
     </section>
 
+    <!-- How It Works & Promo Video Sections -->
+
+
+    <section class="video-showcase alt-bg">
+        <div class="container">
+            <h2 class="section-title">Explore Homes & Cars</h2>
+            <div class="video-split-layout">
+                <div class="video-text">
+                    <h3>Premium Listings</h3>
+                    <p>Find your dream home or the perfect car. Our marketplace features verified listings with
+                        high-quality videos and images to give you the best viewing experience before you buy.</p>
+                    <a href="listings.html?category=house" class="btn btn-secondary">Browse Real Estate & Cars</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -118,12 +139,12 @@
             </div>
         </div>
     </footer>
- 
+
     <script>
         // Check authentication on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const token = localStorage.getItem('token');
-            
+
             if (token) {
                 // User is logged in (owner)
                 window.location.href = 'dashboard.html';
@@ -141,7 +162,17 @@
         }
     </script>
 
+    <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
     <script type="module" src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Plyr for home page videos
+            const players = Array.from(document.querySelectorAll('.plyr-video')).map(p => new Plyr(p, {
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+                tooltips: { controls: true, seek: true }
+            }));
+        });
+    </script>
 </body>
-</html>
 
+</html>
