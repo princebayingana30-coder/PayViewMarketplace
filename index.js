@@ -1,16 +1,19 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
-// Middleware
+// --------------------
+// CORS for Netlify frontend
 app.use(cors({
   origin: [
-    "http://payviewmarketplace.netlify.app",
+    "https://cute-semolina-e7baef.netlify.app", // YOUR NETLIFY SITE
     "http://localhost:3000"
   ],
   credentials: true
 }));
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
@@ -27,7 +30,7 @@ app.get("/", (req, res) => {
   res.send("PayView Marketplace backend is running 🚀");
 });
 
-// Health check endpoint for Render
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok" });
 });
@@ -37,11 +40,15 @@ app.get("/health", (req, res) => {
 // Register user
 app.post("/api/v1/auth/register", (req, res) => {
   const { name, email, phone, password } = req.body;
+
+  // Check if email already exists
   if (users.find(u => u.email === email)) {
     return res.status(400).json({ success: false, message: "Email already registered" });
   }
+
   const newUser = { id: Date.now(), name, email, phone, password };
   users.push(newUser);
+
   res.json({ success: true, user: newUser });
 });
 
@@ -70,6 +77,7 @@ app.get("/api/v1/listings/:id", (req, res) => {
 // Create a listing
 app.post("/api/v1/listings", (req, res) => {
   const { title, category, price, location, phone, description, availability, images, videos, ownerId } = req.body;
+
   const newListing = {
     id: Date.now(),
     title,
@@ -86,6 +94,7 @@ app.post("/api/v1/listings", (req, res) => {
     views: 0,
     createdAt: new Date().toISOString()
   };
+
   listings.push(newListing);
   res.json({ success: true, listing: newListing });
 });
@@ -94,6 +103,7 @@ app.post("/api/v1/listings", (req, res) => {
 app.put("/api/v1/listings/:id", (req, res) => {
   const idx = listings.findIndex(l => l.id === parseInt(req.params.id));
   if (idx === -1) return res.status(404).json({ success: false, message: "Listing not found" });
+
   listings[idx] = { ...listings[idx], ...req.body };
   res.json({ success: true, listing: listings[idx] });
 });
@@ -102,6 +112,7 @@ app.put("/api/v1/listings/:id", (req, res) => {
 app.delete("/api/v1/listings/:id", (req, res) => {
   const idx = listings.findIndex(l => l.id === parseInt(req.params.id));
   if (idx === -1) return res.status(404).json({ success: false, message: "Listing not found" });
+
   listings.splice(idx, 1);
   res.json({ success: true, message: "Listing deleted" });
 });
@@ -110,5 +121,5 @@ app.delete("/api/v1/listings/:id", (req, res) => {
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
