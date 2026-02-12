@@ -1453,6 +1453,34 @@ function initAuthForms() {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');
 
+    async function login(email, password) {
+        try {
+            const res = await fetch("https://payviewmarketplace.onrender.com/api/v1/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            return await res.json();
+        } catch (err) {
+            console.error(err);
+            return { success: false, message: 'Network error' };
+        }
+    }
+
+    async function register(userData) {
+        try {
+            const res = await fetch("https://payviewmarketplace.onrender.com/api/v1/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(userData)
+            });
+            return await res.json();
+        } catch (err) {
+            console.error(err);
+            return { success: false, message: 'Network error' };
+        }
+    }
+
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1460,7 +1488,6 @@ function initAuthForms() {
             const password = document.getElementById('password').value;
             const submitBtn = loginForm.querySelector('button[type="submit"]');
 
-            // Show loading state
             const originalText = submitBtn.innerText;
             submitBtn.innerText = 'Logging in...';
             submitBtn.disabled = true;
@@ -1468,6 +1495,7 @@ function initAuthForms() {
             const result = await login(email, password);
 
             if (result.success) {
+                localStorage.setItem('currentUser', JSON.stringify(result.user));
                 window.location.href = 'dashboard.html';
             } else {
                 showNotification(result.message || 'Login failed', 'error');
@@ -1492,12 +1520,10 @@ function initAuthForms() {
                 name: document.getElementById('regName').value,
                 email: document.getElementById('regEmail').value,
                 phone: document.getElementById('regPhone').value,
-                password: password,
-                confirmPassword: confirmPassword
+                password: password
             };
 
             const submitBtn = registerForm.querySelector('button[type="submit"]');
-            // Show loading state
             const originalText = submitBtn.innerText;
             submitBtn.innerText = 'Creating Account...';
             submitBtn.disabled = true;
@@ -1505,6 +1531,7 @@ function initAuthForms() {
             const result = await register(userData);
             if (result.success) {
                 showNotification('Registration successful! Redirecting...', 'success');
+                localStorage.setItem('currentUser', JSON.stringify(result.user));
                 setTimeout(() => {
                     window.location.href = 'dashboard.html';
                 }, 1500);
