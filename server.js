@@ -77,7 +77,7 @@ app.use(fileupload({
 }));
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/payview-marketplace', {
+mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://princebayingana30_db_user:<db_password>@cluster0.ljpdf0z.mongodb.net/?appName=Cluster0', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
