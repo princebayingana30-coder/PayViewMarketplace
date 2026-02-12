@@ -1,94 +1,63 @@
-// Test registration functionality
-console.log('Testing registration functionality...');
+// Node.js environment requires node-fetch
+const fetch = require('node-fetch');
 
-// Simulate localStorage
-if (typeof localStorage === 'undefined') {
-    global.localStorage = {
-        data: {},
-        getItem: function(key) { return this.data[key] || null; },
-        setItem: function(key, value) { this.data[key] = value; },
-        removeItem: function(key) { delete this.data[key]; }
-    };
-}
-
-// Initialize storage
-function initializeStorage() {
-    if (!localStorage.getItem('listings')) {
-        localStorage.setItem('listings', JSON.stringify([]));
-    }
-    if (!localStorage.getItem('users')) {
-        localStorage.setItem('users', JSON.stringify([]));
-    }
-    if (!localStorage.getItem('currentUser')) {
-        localStorage.setItem('currentUser', JSON.stringify(null));
-    }
-    if (!localStorage.getItem('messages')) {
-        localStorage.setItem('messages', JSON.stringify([]));
+// Test registration function
+async function testRegister(userData) {
+    try {
+        const response = await fetch('https://payviewmarketplace.onrender.com/api/v1/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+        });
+        const data = await response.json();
+        console.log('Registration result:', data);
+    } catch (err) {
+        console.error('Error:', err);
     }
 }
 
-// Register function
-function register(userData) {
-    const users = JSON.parse(localStorage.getItem('users'));
-
-    if (users.find(u => u.email === userData.email)) {
-        return { success: false, message: 'Email already registered' };
+// Test login function
+async function testLogin(loginData) {
+    try {
+        const response = await fetch('https://payviewmarketplace.onrender.com/api/v1/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(loginData)
+        });
+        const data = await response.json();
+        console.log('Login result:', data);
+    } catch (err) {
+        console.error('Error:', err);
     }
-
-    if (userData.password !== userData.confirmPassword) {
-        return { success: false, message: 'Passwords do not match' };
-    }
-
-    const newUser = {
-        id: Date.now(),
-        name: userData.name,
-        email: userData.email,
-        phone: userData.phone,
-        password: userData.password,
-        createdAt: new Date().toISOString()
-    };
-
-    users.push(newUser);
-    localStorage.setItem('users', JSON.stringify(users));
-    localStorage.setItem('currentUser', JSON.stringify(newUser));
-
-    return { success: true, user: newUser };
 }
 
-// Test registration
-initializeStorage();
+// Test scenarios
+(async () => {
+    console.log('Testing registration with valid data...');
+    await testRegister({
+        name: 'Test User',
+        email: 'test@example.com',
+        phone: '+250123456789',
+        password: 'password123'
+    });
 
-console.log('Testing registration with valid data...');
-const result1 = register({
-    name: 'Test User',
-    email: 'test@example.com',
-    phone: '+250123456789',
-    password: 'password123',
-    confirmPassword: 'password123'
-});
+    console.log('Testing registration with existing email...');
+    await testRegister({
+        name: 'Test User 2',
+        email: 'test@example.com', // same email
+        phone: '+250987654321',
+        password: 'password123'
+    });
 
-console.log('Registration result:', result1);
+    console.log('Testing login with correct credentials...');
+    await testLogin({
+        email: 'test@example.com',
+        password: 'password123'
+    });
 
-console.log('Testing registration with existing email...');
-const result2 = register({
-    name: 'Test User 2',
-    email: 'test@example.com',
-    phone: '+250987654321',
-    password: 'password123',
-    confirmPassword: 'password123'
-});
-
-console.log('Registration result:', result2);
-
-console.log('Testing registration with mismatched passwords...');
-const result3 = register({
-    name: 'Test User 3',
-    email: 'test3@example.com',
-    phone: '+250555555555',
-    password: 'password123',
-    confirmPassword: 'differentpassword'
-});
-
-console.log('Registration result:', result3);
-
-console.log('All tests completed!');
+    console.log('Testing login with wrong password...');
+    await testLogin({
+        email: 'test@example.com',
+        password: 'wrongpassword'
+    });
+})();
